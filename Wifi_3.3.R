@@ -205,7 +205,7 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 ### C: 1 outlier : -7650, -7600 (~350 obs)
 ### C: min: -7696; max: -7300 - similar to training's range
 
-### C.2 Explore relationship between non wap variables ####
+#### C.2 Explore relationship between non wap variables ####
 
 #### floor abd relative position
 #qplot(trainingData$FLOOR, trainingData$RELATIVEPOSITION)
@@ -262,7 +262,7 @@ ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
 # qplot(trainingData$SPACEID, trainingData$BUILDINGID)
 
 
-### C.3 Explore wap-variables ####
+#### C.3 Explore wap-variables ####
 library(dplyr)
 
 #hchart(trainingData$WAP001)
@@ -303,8 +303,8 @@ hchart(trainingData$WAP120)
 #hchart(trainingData$WAP520)
 ###only 100
 
-### D. Pre-processing ####
-### D.1 waps that haven't detected anything / NEW DATASET ####
+#### D. Pre-processing ####
+#### D.1 waps that haven't detected anything / NEW DATASET ####
 
 ### how many attributes whose min value is 100 
 sum(apply(trainingData,2,function(x)(min(x==100))))
@@ -323,19 +323,22 @@ min100_valid <- names(which(apply(validationData[,1:520],2,function(x)min(x))== 
 ### C: vector list of waps with 100 // 153
 min100_total<-c(min100_valid,min100_train)
 
-
 ### training_clean // new data set without waps that only yield 100 - ERRO 
 training_clean<-trainingData[,-which(names(trainingData) %in% min100_total)]
 str(training_clean)
+apply(training_clean,2,function(x)names(min(x==100))) ### NULL  - checked
+sum(apply(training_clean,2,function(x)names(min(x==100)))) ### 0 - checked
+
 ### C: new dataset - only with 321 variables
 
 ### validation_clean // new data set without waps that only yield 100 
 validation_clean<-validationData[,-which(names(validationData) %in% min100_total)]
 str(validation_clean)
+apply(validation_clean,2,function(x)names(min(x==100))) ### NULL  - checked
 ### C: new dataset - only with 321 variables
 
 
-### D.2 waps with poor and erroneous values / NEW DATASET ####
+#### D.2 waps with poor and erroneous values / NEW DATASET ####
 ### all are 0 
 sum(apply(training_clean[,c(1:312)],2,function(x)(min(x==0))))
 ### C: 0 waps with all zeros 
@@ -376,10 +379,16 @@ which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0)))
 
 erron_train <- names(which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0)))>=1))
 is.vector(erron_train)
+erron_train
+### C: "WAP011" "WAP012" "WAP061" "WAP062" "WAP063" "WAP064" "WAP065" "WAP066" "WAP069" "WAP070" "WAP073"
+# WAP074" "WAP077" "WAP078" "WAP080" "WAP081" "WAP082" "WAP083" "WAP084" "WAP085" "WAP087" "WAP105"
+# "WAP117" "WAP118" "WAP121" "WAP122" "WAP127" "WAP128" "WAP131" "WAP132" "WAP138" "WAP139" "WAP144"
+# "WAP145" "WAP180" "WAP189" "WAP249" "WAP262" "WAP279" "WAP286" "WAP335" "WAP342" "WAP481" "WAP483"
+# "WAP484" "WAP486" "WAP495" "WAP496" "WAP501" "WAP502"
 
 ## validation  
 sum(apply(validation_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0))))
-### C: its curious that there is no erroneous value sin the dataset 
+### C: its curious that there is no erroneous values in the dataset 
 
 
 ### training_clean_v2 // new data set without waps that only yield 100 + waps that have yielded erroneous values (-30:0) 
@@ -392,7 +401,7 @@ validation_clean_v2<-validation_clean[,-which(names(validation_clean) %in% erron
 str(validation_clean_v2)
 ### C: dataset with 271 variables
 
-### D.3 observations with only poor / erroneous values ####
+#### D.3 observations with only poor / erroneous values ####
 ### all are 0 
 sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x==0))))
 ### 0 records with all 0 values
@@ -410,3 +419,184 @@ sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x==-104))))
 ### unusable values - all values lower than 90 
 sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x<=-90))))
 ### C: no observation with only unusable values
+
+#### D.4.1 sub sample by building - trainin_clean ####
+str(training_clean)
+str(training_clean$BUILDINGID)
+colnames(training_clean)
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100")) )
+
+train_TI<-training_clean %>% filter(BUILDINGID=="TI")
+### C: TI building - 5,249 x 321
+head(train_TI)
+colnames(train_TI)
+intersect(train_TI,training_clean)
+
+train_TD<-training_clean %>% filter(BUILDINGID=="TD")
+### C: TD building - 5,196 x 321
+
+train_TC<-training_clean %>% filter(BUILDINGID=="TC")
+### C: TC building - 9,492 x 321
+
+#### D.4.2 sub sample by building and floor ####
+
+### $ TI Building - Floor 0, 1, 2 and 3 ####
+train_TI_F0<-train_TI %>% filter(FLOOR==0)
+### C: TI building and floor 0 - 1,059 x 271
+
+train_TI_F1<-train_TI %>% filter(FLOOR==1)
+### C: TI building and floor 1 - 1,356 x 271 
+
+train_TI_F2<-train_TI %>% filter(FLOOR==2)
+### C: TI building and floor 2 - 1,443 x 271 
+
+train_TI_F3<-train_TI %>% filter(FLOOR==3)
+### C: TI building and floor 2 - 1,391 x 271 
+
+### $ TD Building - Floor 0, 1, 2 and 3 ####
+train_TD %>% filter(FLOOR==0)
+train_TD_F0<-train_TD %>% filter(FLOOR==0)
+### C: TD building and floor 0 - 1,368 x 271
+
+train_TD_F1<-train_TD %>% filter(FLOOR==1)
+### C: TD building and floor 1 - 1,484 x 271
+
+train_TD_F2<-train_TD %>% filter(FLOOR==2)
+### C: TD building and floor 2 - 1,396  x 271
+
+train_TD_F3<-train_TD %>% filter(FLOOR==3)
+### C: TD building and floor 3 - 948  x 271
+
+### $ TC Building - Floor 0, 1, 2, 3 and 4 ####
+train_TC_F0<-train_TC %>% filter(FLOOR==0)
+### C: TC building and floor 0 - 1,942 x 271
+
+train_TC_F1<-train_TC %>% filter(FLOOR==1)
+### C: TC building and floor 1 - 2,162 x 271
+
+train_TC_F2<-train_TC %>% filter(FLOOR==2)
+### C: TC building and floor 2 - 1,577 x 271
+
+train_TC_F3<-train_TC %>% filter(FLOOR==3)
+### C: TC building and floor 3 - 2,709 x 271
+
+train_TC_F4<-train_TC %>% filter(FLOOR==4)
+### C: TC building and floor 4 - 1,102 x 271
+
+
+
+#### D.5 Explore different samples #### 
+
+### Latitude and longitude - building and floor 
+ggplot(data=train_TI, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
+### No big difference
+ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
+### A lot of differences - 2nd floor the most complete - 3rd floor the least 
+ggplot(data=train_TC, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
+### Some differences - 0, 1 and 2 floor - few observation son south side. 3rd floor is the more complete and 4th floor/ south-east is really bad
+
+### something is wrong ### 
+apply(training_clean[,c(1:321)],2,function(x)min(x>="-90"))
+sum(apply(training_clean[,c(1:321)],2,function(x)min(x>="-90"))) ### 20
+sum(apply(training_clean[,c(1:321)],2,function(x)min(x<"-90"))) ### 99
+
+sum(apply(train_TI[,c(1:321)],2,function(x)min(x>="-90"))) ### 194
+sum(apply(train_TD[,c(1:321)],2,function(x)min(x>="-90"))) ### 168
+sum(apply(train_TC[,c(1:321)],2,function(x)min(x>="-90"))) ### 200
+
+sum(apply(train_TI[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0 
+sum(apply(train_TD[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0
+sum(apply(train_TC[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0
+
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100"))) ### 0
+sum(apply(train_TI[,c(1:312)],2,function(x)min(x=="100"))) ### 166
+sum(apply(train_TD[,c(1:312)],2,function(x)min(x=="100"))) ### 144
+sum(apply(train_TC[,c(1:312)],2,function(x)min(x=="100"))) ### 190
+
+### whats the difference?
+sum(apply(train_TI,2,function(x)names(min(x==100))))
+sum(apply(train_TD,2,function(x)names(min(x==100))))
+sum(apply(train_TC,2,function(x)names(min(x==100))))
+
+### records -30 to 0 
+sum(apply(training_clean[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 682
+sum(apply(train_TI[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 2
+sum(apply(train_TD[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 8 
+sum(apply(train_TC[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 672
+### C: something happening in TC
+
+sum(apply(train_TC_F0[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 3
+sum(apply(train_TC_F1[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 2
+sum(apply(train_TC_F2[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 0
+sum(apply(train_TC_F3[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 372
+sum(apply(train_TC_F4[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 295 
+### C: something happening in TC - 3rd and 4th floors
+
+which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x > -30 & x <= 0)))>0)
+which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x > -30 & x <= 0)))>0)
+### C: most of them are the same // might be linked to the same waps - waps on the same floor?
+
+### records lower tham -90
+names(which(apply(train_TC[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 121
+names(which(apply(train_TD[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 163
+names(which(apply(train_TI[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 141
+
+
+names(which(apply(train_TC_F0[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 67
+names(which(apply(train_TC_F1[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 100
+names(which(apply(train_TC_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 91
+names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 115
+names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 87
+
+names(which(apply(train_TD_F0[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 72
+names(which(apply(train_TD_F1[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 133
+names(which(apply(train_TD_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 141
+names(which(apply(train_TD_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 116
+
+names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 93
+names(which(apply(train_TI_F1[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 104
+names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 129
+names(which(apply(train_TI_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 114
+### no conclusion 
+
+
+### records from -90 to -30
+names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 89
+names(which(apply(train_TI_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 101
+names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 112
+names(which(apply(train_TI_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 103
+
+names(which(apply(train_TD_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 101
+names(which(apply(train_TD_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 110
+names(which(apply(train_TD_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 134
+names(which(apply(train_TD_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 98
+
+names(which(apply(train_TC_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 70
+names(which(apply(train_TC_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 107
+names(which(apply(train_TC_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 93
+names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 103
+names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 68
+### no conclusion 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
