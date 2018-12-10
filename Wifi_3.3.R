@@ -424,19 +424,17 @@ sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x<=-90))))
 str(training_clean)
 str(training_clean$BUILDINGID)
 colnames(training_clean)
-sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100")) )
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100")) ) ### Checking 
 
 train_TI<-training_clean %>% filter(BUILDINGID=="TI")
 ### C: TI building - 5,249 x 321
-head(train_TI)
-colnames(train_TI)
-intersect(train_TI,training_clean)
-
 train_TD<-training_clean %>% filter(BUILDINGID=="TD")
 ### C: TD building - 5,196 x 321
-
 train_TC<-training_clean %>% filter(BUILDINGID=="TC")
 ### C: TC building - 9,492 x 321
+
+### C: I am missing the same split on the validaton dataset 
+
 
 #### D.4.2 sub sample by building and floor ####
 
@@ -495,30 +493,33 @@ ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~F
 ggplot(data=train_TC, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
 ### Some differences - 0, 1 and 2 floor - few observation son south side. 3rd floor is the more complete and 4th floor/ south-east is really bad
 
-### something is wrong ### 
-apply(training_clean[,c(1:321)],2,function(x)min(x>="-90"))
-sum(apply(training_clean[,c(1:321)],2,function(x)min(x>="-90"))) ### 20
-sum(apply(training_clean[,c(1:321)],2,function(x)min(x<"-90"))) ### 99
+### $ signal lower than 90 and higher than 90 // ERROR ####
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x>=-90))) ### 5 
+which(apply(training_clean[,c(1:312)],2,function(x)min(x>=-90))>0) 
+### WAP275 WAP354 WAP434 WAP492 WAP498 - all of them more than 210 times
+summary(training_clean$WAP275) ### E: min: -88
 
-sum(apply(train_TI[,c(1:321)],2,function(x)min(x>="-90"))) ### 194
-sum(apply(train_TD[,c(1:321)],2,function(x)min(x>="-90"))) ### 168
-sum(apply(train_TC[,c(1:321)],2,function(x)min(x>="-90"))) ### 200
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x<=-90))) ### 0 
+which(apply(training_clean[,c(1:312)],2,function(x)min(x<=-90))>0) ### none 
+apply(training_clean[,c(1:312)],2,function(x)length(x<=-90))
+sum(apply(training_clean[,c(1:312)],2,function(x)length(x<=-90))) ### 6220344
+sum(apply(training_clean[,c(1:312)],2,function(x)length(x>=-90))) ### 6220344
 
-sum(apply(train_TI[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0 
-sum(apply(train_TD[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0
-sum(apply(train_TC[,c(1:321)],2,function(x)min(x>="-90" & x<="-30"))) ### 0
 
+sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90)))) ### 57599
+sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x>=-90)))) ### 6176092
+
+which(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90)))>0) ### same 312
+which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>=-90)))>0) ### same 312
+
+
+### $ signal equal to 100 // Building ####
 sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100"))) ### 0
 sum(apply(train_TI[,c(1:312)],2,function(x)min(x=="100"))) ### 166
 sum(apply(train_TD[,c(1:312)],2,function(x)min(x=="100"))) ### 144
 sum(apply(train_TC[,c(1:312)],2,function(x)min(x=="100"))) ### 190
 
-### whats the difference?
-sum(apply(train_TI,2,function(x)names(min(x==100))))
-sum(apply(train_TD,2,function(x)names(min(x==100))))
-sum(apply(train_TC,2,function(x)names(min(x==100))))
-
-### records -30 to 0 
+### $ signal between -30 to 0 // Building and floor ####
 sum(apply(training_clean[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 682
 sum(apply(train_TI[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 2
 sum(apply(train_TD[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 8 
@@ -536,11 +537,13 @@ which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x > -30 & x <= 0))
 which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x > -30 & x <= 0)))>0)
 ### C: most of them are the same // might be linked to the same waps - waps on the same floor?
 
-### records lower tham -90
+which(apply(train_TC_F3[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))>0)
+which(apply(train_TC_F4[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))>0)
+
+### $ signal lower than -90 // Building and floor ####
 names(which(apply(train_TC[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 121
 names(which(apply(train_TD[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 163
 names(which(apply(train_TI[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 141
-
 
 names(which(apply(train_TC_F0[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 67
 names(which(apply(train_TC_F1[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 100
@@ -559,8 +562,7 @@ names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>
 names(which(apply(train_TI_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 114
 ### no conclusion 
 
-
-### records from -90 to -30
+### $ signal between -90 to -30 // Building and floor ####
 names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 89
 names(which(apply(train_TI_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 101
 names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 112
@@ -578,24 +580,64 @@ names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x
 names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 68
 ### no conclusion 
 
+#### D.6 replace 100 by -105 //  training_clean witouth 100#### 
+
+### first, in the general dataset 
+# for(i in training_clean) if(i == 100) training_clean <- "-105"
+# apply(training_clean[,c(1:312)],1,function(x) ifelse(x=="100","-105",x))
+training_clean[training_clean==100] <- -105
+
+### $ by building #### 
+train_TI<-training_clean %>% filter(BUILDINGID=="TI")
+### C: TI building - 5,249 x 321
+train_TD<-training_clean %>% filter(BUILDINGID=="TD")
+### C: TD building - 5,196 x 321
+train_TC<-training_clean %>% filter(BUILDINGID=="TC")
+### C: TC building - 9,492 x 321
+
+max(train_TI[,c(1:312)]) ### -29
+max(train_TD[,c(1:312)]) ### -1
+max(train_TC[,c(1:312)]) ### 0 
 
 
+### $ by floors: #### 
 
+### $$ TI Building - Floor 0, 1, 2 and 3 ####
+train_TI_F0<-train_TI %>% filter(FLOOR==0)
+train_TI_F1<-train_TI %>% filter(FLOOR==1)
+train_TI_F2<-train_TI %>% filter(FLOOR==2)
+train_TI_F3<-train_TI %>% filter(FLOOR==3)
 
+### $$ TD Building - Floor 0, 1, 2 and 3 ####
+train_TD_F0<-train_TD %>% filter(FLOOR==0)
+train_TD_F1<-train_TD %>% filter(FLOOR==1)
+train_TD_F2<-train_TD %>% filter(FLOOR==2)
+train_TD_F3<-train_TD %>% filter(FLOOR==3)
 
+### $$ TC Building - Floor 0, 1, 2, 3 and 4 ####
+train_TC_F0<-train_TC %>% filter(FLOOR==0)
+train_TC_F1<-train_TC %>% filter(FLOOR==1)
+train_TC_F2<-train_TC %>% filter(FLOOR==2)
+train_TC_F3<-train_TC %>% filter(FLOOR==3)
+train_TC_F4<-train_TC %>% filter(FLOOR==4)
 
+max(train_TI_F0[,c(1:312)]) ### -29
+max(train_TI_F1[,c(1:312)]) ### -34
+max(train_TI_F2[,c(1:312)]) ### -31
+max(train_TI_F3[,c(1:312)]) ### -30
 
+max(train_TD_F0[,c(1:312)]) ### -1
+max(train_TD_F1[,c(1:312)]) ### -35
+max(train_TD_F2[,c(1:312)]) ### -39
+max(train_TD_F3[,c(1:312)]) ### -40
 
+max(train_TC_F0[,c(1:312)]) ### -25
+max(train_TC_F1[,c(1:312)]) ### -29
+max(train_TC_F2[,c(1:312)]) ### -33
+max(train_TC_F3[,c(1:312)]) ### 0
+max(train_TC_F4[,c(1:312)]) ### 0 
 
-
-
-
-
-
-
-
-
-
+### C: weird values in TC - 3rd and 4th floor // TD - in 0th floor 
 
 
 
