@@ -230,7 +230,7 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 #ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~RELATIVEPOSITION)
 
 
-ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+#ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
 
 
 # ggplot_coordinates + geom_point(size=4, aes(color = ifelse(LONGITUDE < -7580, "TI",
@@ -246,7 +246,7 @@ ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + 
 
 
 ## validation
-ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+# ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
 
 ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
                                                          ifelse(FLOOR ==1, "1",
@@ -264,47 +264,7 @@ ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
 
 #### C.3 Explore wap-variables ####
 library(dplyr)
-
-#hchart(trainingData$WAP001)
-#summary(trainingData$WAP001)
-### -97 and 100
-#hchart(trainingData$WAP002)
-#summary(trainingData$WAP002)
-### -90 and 100
-#hchart(trainingData$WAP003)
-#summary(trainingData$WAP003)
-###only 100
-#hchart(trainingData$WAP004)
-#summary(trainingData$WAP004)
-###only 100
-#summary(trainingData$WAP005)
-#hchart(trainingData$WAP005)
-### -97 and 100
-
-# (..)
-summary(trainingData$WAP120)
-hchart(trainingData$WAP120)
-# 100 or from -42 to -98
-### mean: 90.98 - several other values 
-
-#summary(trainingData$WAP220)
-#hchart(trainingData$WAP220)
-### only 100
-
-#summary(trainingData$WAP320)
-#hchart(trainingData$WAP320)
-### -98 and 100
-
-#summary(trainingData$WAP420)
-#hchart(trainingData$WAP420)
-### -94 and 100
-
-#summary(trainingData$WAP520)
-#hchart(trainingData$WAP520)
-###only 100
-
-#### D. Pre-processing ####
-#### D.1 waps that haven't detected anything / NEW DATASET ####
+#### C.3.1 New dataset without waps that only have 100 ####
 
 ### how many attributes whose min value is 100 
 sum(apply(trainingData,2,function(x)(min(x==100))))
@@ -328,7 +288,6 @@ training_clean<-trainingData[,-which(names(trainingData) %in% min100_total)]
 str(training_clean)
 apply(training_clean,2,function(x)names(min(x==100))) ### NULL  - checked
 sum(apply(training_clean,2,function(x)names(min(x==100)))) ### 0 - checked
-
 ### C: new dataset - only with 321 variables
 
 ### validation_clean // new data set without waps that only yield 100 
@@ -337,94 +296,21 @@ str(validation_clean)
 apply(validation_clean,2,function(x)names(min(x==100))) ### NULL  - checked
 ### C: new dataset - only with 321 variables
 
+#### D.3.2 New version of dataset 100 <- -105 ####
+training_clean[training_clean==100] <- -105
 
-#### D.2 waps with poor and erroneous values / NEW DATASET ####
-### all are 0 
-sum(apply(training_clean[,c(1:312)],2,function(x)(min(x==0))))
-### C: 0 waps with all zeros 
-
-### all are 100
-sum(which(apply(training_clean[,c(1:312)],2,function(x) min(x)) == 100))
-### C: 0 records with all 100
-
-### with unusable values - below -90 (acceptable threshold) 
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90))))
-### C: 57599 records lower 100
-which(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90)))>=1000)
-### C: WAP061 WAP062 WAP063 WAP064 WAP065 WAP066 WAP087                               
-
-### with unusable values - below -100 
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-100))))
-### C: 303 records lower 100
-hchart(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-100))))
-### C: length varies from 0 to 9 // 34 with length 1 - 4 with length 9
-
-### with unusable values - equal to -104 
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x==-104))))
-### C: 4 records lower 100 - WAP282
-### C: not taking out the unaceptable values yet - still to be explored 
-
-### with erroneous values - from -30 to 0 
-
-## training 
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0))))
-### !C: 682 records higher  -30 and 0 
-which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0)))>=40)
-### C: WAP087 has a length of more than 80 - meaning, more than 80 times, it has recorded a wrong value 
-which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0)))>=1)
-### C: ~50 waps have recorded erroneous values
-### C: WAP011 WAP012 WAP061 WAP062 WAP063 WAP064 WAP065 WAP066 WAP069 WAP070 WAP073 WAP074 WAP077 WAP078 WAP080 WAP081 WAP082
-### C: WAP083 WAP084 WAP085 WAP087 WAP105 WAP117 WAP118 WAP121 WAP122 WAP127 WAP128 WAP131 WAP132 WAP138 WAP139 WAP144 WAP145 
-### C: WAP180 WAP189 WAP249 WAP262 WAP279 WAP286 WAP335 WAP342 WAP481 WAP483 WAP484 WAP486 WAP495 WAP496 WAP501 WAP502
-
-erron_train <- names(which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0)))>=1))
-is.vector(erron_train)
-erron_train
-### C: "WAP011" "WAP012" "WAP061" "WAP062" "WAP063" "WAP064" "WAP065" "WAP066" "WAP069" "WAP070" "WAP073"
-# WAP074" "WAP077" "WAP078" "WAP080" "WAP081" "WAP082" "WAP083" "WAP084" "WAP085" "WAP087" "WAP105"
-# "WAP117" "WAP118" "WAP121" "WAP122" "WAP127" "WAP128" "WAP131" "WAP132" "WAP138" "WAP139" "WAP144"
-# "WAP145" "WAP180" "WAP189" "WAP249" "WAP262" "WAP279" "WAP286" "WAP335" "WAP342" "WAP481" "WAP483"
-# "WAP484" "WAP486" "WAP495" "WAP496" "WAP501" "WAP502"
-
-## validation  
-sum(apply(validation_clean[,c(1:312)],2,function(x)length(which(x>-30 & x <=0))))
-### C: its curious that there is no erroneous values in the dataset 
+### D.3.3 New version of dataset - eliminate rows with all 100 ####
+apply(training_clean[,1:312],1,mean) != -105
+training_clean <- training_clean[apply(training_clean[,1:312],1,mean)!= -105,]
+str(training_clean)
+str(trainingData)
 
 
-### training_clean_v2 // new data set without waps that only yield 100 + waps that have yielded erroneous values (-30:0) 
-training_clean_v2<-training_clean[,-which(names(training_clean) %in% erron_train)]
-str(training_clean_v2)
-### C: dataset with 271 variables
-
-### validation_clean_v2 // new data set without waps that only yield 100 + waps that have yielded erroneous values (-30:0) 
-validation_clean_v2<-validation_clean[,-which(names(validation_clean) %in% erron_train)]
-str(validation_clean_v2)
-### C: dataset with 271 variables
-
-#### D.3 observations with only poor / erroneous values ####
-### all are 0 
-sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x==0))))
-### 0 records with all 0 values
-
-### all are 100 (just checking) 
-sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x==100))))
-
-### erroneous values - between -30 and 0 (just checking) 
-sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x>-30 & x <=0))))
-
-### unusable values - all -104
-sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x==-104))))
-### C: no observation with only -104 values
-
-### unusable values - all values lower than 90 
-sum(apply(training_clean_v2[,c(1:271)],1,function(x)(min(x<=-90))))
-### C: no observation with only unusable values
-
-#### D.4.1 sub sample by building - trainin_clean ####
+#### D.3.4 Separate dataset by building ####
 str(training_clean)
 str(training_clean$BUILDINGID)
-colnames(training_clean)
-sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100")) ) ### Checking 
+sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100"))) ### Checking 
+sum(apply(training_clean[,c(1:312)],2,function(x)(x=="-105"))) ### Checking 
 
 train_TI<-training_clean %>% filter(BUILDINGID=="TI")
 ### C: TI building - 5,249 x 321
@@ -432,12 +318,9 @@ train_TD<-training_clean %>% filter(BUILDINGID=="TD")
 ### C: TD building - 5,196 x 321
 train_TC<-training_clean %>% filter(BUILDINGID=="TC")
 ### C: TC building - 9,492 x 321
-
 ### C: I am missing the same split on the validaton dataset 
 
-
-#### D.4.2 sub sample by building and floor ####
-
+#### D.3.5 Sub sample by building and floor ####
 ### $ TI Building - Floor 0, 1, 2 and 3 ####
 train_TI_F0<-train_TI %>% filter(FLOOR==0)
 ### C: TI building and floor 0 - 1,059 x 271
@@ -481,9 +364,7 @@ train_TC_F3<-train_TC %>% filter(FLOOR==3)
 train_TC_F4<-train_TC %>% filter(FLOOR==4)
 ### C: TC building and floor 4 - 1,102 x 271
 
-
-
-#### D.5 Explore different samples #### 
+#### D.5 Explore wap-variables in different datasets #### 
 
 ### Latitude and longitude - building and floor 
 ggplot(data=train_TI, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
@@ -492,32 +373,6 @@ ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~F
 ### A lot of differences - 2nd floor the most complete - 3rd floor the least 
 ggplot(data=train_TC, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
 ### Some differences - 0, 1 and 2 floor - few observation son south side. 3rd floor is the more complete and 4th floor/ south-east is really bad
-
-### $ signal lower than 90 and higher than 90 // ERROR ####
-sum(apply(training_clean[,c(1:312)],2,function(x)min(x>=-90))) ### 5 
-which(apply(training_clean[,c(1:312)],2,function(x)min(x>=-90))>0) 
-### WAP275 WAP354 WAP434 WAP492 WAP498 - all of them more than 210 times
-summary(training_clean$WAP275) ### E: min: -88
-
-sum(apply(training_clean[,c(1:312)],2,function(x)min(x<=-90))) ### 0 
-which(apply(training_clean[,c(1:312)],2,function(x)min(x<=-90))>0) ### none 
-apply(training_clean[,c(1:312)],2,function(x)length(x<=-90))
-sum(apply(training_clean[,c(1:312)],2,function(x)length(x<=-90))) ### 6220344
-sum(apply(training_clean[,c(1:312)],2,function(x)length(x>=-90))) ### 6220344
-
-
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90)))) ### 57599
-sum(apply(training_clean[,c(1:312)],2,function(x)length(which(x>=-90)))) ### 6176092
-
-which(apply(training_clean[,c(1:312)],2,function(x)length(which(x<=-90)))>0) ### same 312
-which(apply(training_clean[,c(1:312)],2,function(x)length(which(x>=-90)))>0) ### same 312
-
-
-### $ signal equal to 100 // Building ####
-sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100"))) ### 0
-sum(apply(train_TI[,c(1:312)],2,function(x)min(x=="100"))) ### 166
-sum(apply(train_TD[,c(1:312)],2,function(x)min(x=="100"))) ### 144
-sum(apply(train_TC[,c(1:312)],2,function(x)min(x=="100"))) ### 190
 
 ### $ signal between -30 to 0 // Building and floor ####
 sum(apply(training_clean[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 682
@@ -539,6 +394,7 @@ which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x > -30 & x <= 0))
 
 which(apply(train_TC_F3[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))>0)
 which(apply(train_TC_F4[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))>0)
+### C: treat this dataset separately 
 
 ### $ signal lower than -90 // Building and floor ####
 names(which(apply(train_TC[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 121
@@ -560,7 +416,7 @@ names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x <= -90)))>
 names(which(apply(train_TI_F1[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 104
 names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 129
 names(which(apply(train_TI_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 114
-### no conclusion 
+### no strong conclusion from now 
 
 ### $ signal between -90 to -30 // Building and floor ####
 names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 89
@@ -578,67 +434,111 @@ names(which(apply(train_TC_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x
 names(which(apply(train_TC_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 93
 names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 103
 names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 68
-### no conclusion 
+### no conclusion for now
 
-#### D.6 replace 100 by -105 //  training_clean witouth 100#### 
+#### D.7 check for variance #### 
+### $ general dataset ####
+apply(training_clean[,c(1:312)], 2, var)
+names(which(apply(training_clean[,c(1:312)], 2, var)==0)) ## 0
 
-### first, in the general dataset 
-# for(i in training_clean) if(i == 100) training_clean <- "-105"
-# apply(training_clean[,c(1:312)],1,function(x) ifelse(x=="100","-105",x))
-training_clean[training_clean==100] <- -105
+### $ by building ####
+names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
+names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
+names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
 
-### $ by building #### 
-train_TI<-training_clean %>% filter(BUILDINGID=="TI")
-### C: TI building - 5,249 x 321
-train_TD<-training_clean %>% filter(BUILDINGID=="TD")
-### C: TD building - 5,196 x 321
-train_TC<-training_clean %>% filter(BUILDINGID=="TC")
-### C: TC building - 9,492 x 321
+#### E. check for variance #### 
+#### F. Create a dataset with observations from -30 to 0 ####
 
-max(train_TI[,c(1:312)]) ### -29
-max(train_TD[,c(1:312)]) ### -1
-max(train_TC[,c(1:312)]) ### 0 
+## training_erroneous <-apply(training_clean,1,function(x)(x>=-30))
+training_error<-training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)>=-30),]
+summary(training_error)
+str(training_error)
 
+## check what's going on
+hchart(training_error$BUILDINGID)
+### 454 only from TC building 
+hchart(training_error$FLOOR)
+### 252 only on 3 floor and 200 on 4th floor
+hchart(training_error$USERID)
+### 397 userid =6 // 52 userid=14 // 5 userid= 3 // 9 userid=1 
+hchart(training_error$PHONEID)
+### 397 phoneid = 19 // 52 phoneid=7 // 5 phoneid =16 // 13 phoneid 14
+hchart(training_error$RELATIVEPOSITION)
+### 464 outside 
+hchart(training_error$SPACEID)
+### no relevant conclusion
 
-### $ by floors: #### 
+ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                                                                          ifelse(FLOOR ==1, "1",
+                                                                                                 ifelse(FLOOR == 2, "2", 
+                                                                                                        ifelse(FLOOR == 3, "3","4"))))))+
+  scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
-### $$ TI Building - Floor 0, 1, 2 and 3 ####
-train_TI_F0<-train_TI %>% filter(FLOOR==0)
-train_TI_F1<-train_TI %>% filter(FLOOR==1)
-train_TI_F2<-train_TI %>% filter(FLOOR==2)
-train_TI_F3<-train_TI %>% filter(FLOOR==3)
+ggplot(data=training_error, aes(x=USERID, y=PHONEID)) + geom_point() + facet_wrap(training_error$BUILDINGID)
+### C: Phone 19 belongs to user 6, phone 7 belongs to user 14, phone 14 belongs to user 1, user 9 and user 16 
 
-### $$ TD Building - Floor 0, 1, 2 and 3 ####
-train_TD_F0<-train_TD %>% filter(FLOOR==0)
-train_TD_F1<-train_TD %>% filter(FLOOR==1)
-train_TD_F2<-train_TD %>% filter(FLOOR==2)
-train_TD_F3<-train_TD %>% filter(FLOOR==3)
+ggplot(data=training_error, aes(x=FLOOR, y=BUILDINGID)) + geom_point()
+### C: Erros on thrid floor from TI and TC
 
-### $$ TC Building - Floor 0, 1, 2, 3 and 4 ####
-train_TC_F0<-train_TC %>% filter(FLOOR==0)
-train_TC_F1<-train_TC %>% filter(FLOOR==1)
-train_TC_F2<-train_TC %>% filter(FLOOR==2)
-train_TC_F3<-train_TC %>% filter(FLOOR==3)
-train_TC_F4<-train_TC %>% filter(FLOOR==4)
+plot(training_error$FLOOR, training_error$BUILDINGID)
+### C: zero floor errors are equally distributed, errors on 3d floor are mostly from TC and errors on 4th floor are only on TC
 
-max(train_TI_F0[,c(1:312)]) ### -29
-max(train_TI_F1[,c(1:312)]) ### -34
-max(train_TI_F2[,c(1:312)]) ### -31
-max(train_TI_F3[,c(1:312)]) ### -30
+#### G. Delete outliers
 
-max(train_TD_F0[,c(1:312)]) ### -1
-max(train_TD_F1[,c(1:312)]) ### -35
-max(train_TD_F2[,c(1:312)]) ### -39
-max(train_TD_F3[,c(1:312)]) ### -40
-
-max(train_TC_F0[,c(1:312)]) ### -25
-max(train_TC_F1[,c(1:312)]) ### -29
-max(train_TC_F2[,c(1:312)]) ### -33
-max(train_TC_F3[,c(1:312)]) ### 0
-max(train_TC_F4[,c(1:312)]) ### 0 
-
-### C: weird values in TC - 3rd and 4th floor // TD - in 0th floor 
+Phoneid 19 belongs to userid 6, 
+phone 7 belongs to user 14
 
 
+#### H. Modelling ####
+## Data partition 
+library(caret)
+training_c_part<-createDataPartition(y=training_clean$BUILDINGID, times = 2,  p=0.10)
+class(training_c_part)
 
+## Cross validation 
+Cross_validation <- trainControl(
+  method = "repeatedcv",
+  number = 10,
+  repeats = 3)
 
+## Training model
+training_c_part_test <- training_clean[training_c_part$Resample1,c(1:321)]
+training_c_part_train <- training_clean[training_c_part$Resample2,c(1:321)]
+
+## Proportion tables
+
+prop.table(table(training_c_part_test$BUILDINGID))
+
+#### $ Models - KNN ####
+summary(training_c_part_train)
+str(training_c_part_train)
+
+set.seed(123)
+Knn_building <- train(BUILDINGID ~ ., data = training_c_part_train, method = "knn", preProcess=c("scale", "center"), 
+                                         trControl = Cross_validation)
+
+Knn_building
+### C:  K=9 //  accuracy - 0.977006 // Kappa - 0.9636082
+
+KNN_building_prediction <- predict(Knn_building,training_c_part_test)
+KNN_building_prediction
+install.packages(Metrics)
+library("Metrics")
+
+## Accuracy 
+accuracy(KNN_building_prediction, training_c_part_test$BUILDINGID)
+### C: 0.9808757
+table(KNN_building_prediction) 
+### C: 258 251 489 
+table(training_c_part_test$BUILDINGID)
+### C: 263 260 475 
+
+#### $ Models - RF ####
+set.seed(123)
+RF_building <- train(BUILDINGID ~ ., data = training_c_part_train, 
+                    method = "rf", 
+                    ntree=5 , 
+                    tuneLength = 10,
+                    trControl = Cross_validation)
+
+RF_building
