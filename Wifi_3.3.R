@@ -481,7 +481,7 @@ str(training_error)
 #plot(training_error$FLOOR, training_error$BUILDINGID)
 ### C: zero floor errors are equally distributed, errors on 3d floor are mostly from TC and errors on 4th floor are only on TC
 
-#### G. Delete outliers (user 6 and user 14)
+#### G. Explore erroneous values (user 6 and user 14)
 # Phoneid 19 belongs to userid 6, 
 # phone 7 belongs to user 14
 
@@ -507,7 +507,6 @@ USERID_14 <-training_clean %>% filter(USERID==14)
 USERID_14_error <-training_error %>% filter(USERID==14)
 ### C:  52 x 321
 
-
 ### all path - user 6 
 #ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
 ### it has only passed through a corridor of the 3rd floor and a corridor of 4th floor of one building (TC)
@@ -527,7 +526,7 @@ class(timestamp)
 
 ### changing timestamp type 
 USERID_14_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_14_error$TIMESTAMP),origin="1970-01-01",tz="GMT")
-head(USERID_14_error$TIMESTAMP_dt)
+#head(USERID_14_error$TIMESTAMP_dt)
 #hchart(USERID_14_error$TIMESTAMP_dt)
 
 #ggplot(data = USERID_14_error, aes(x = USERID_14_error$TIMESTAMP_dt, y = USERID_14_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_14_error$FLOOR)
@@ -547,7 +546,6 @@ USERID_6_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6_error$TIMESTAMP),ori
 ## USER 1 - has been on all floors (everywhere) in building TI
 ## USER 17 has been in TD - first floor and TC 0 floor 
 ## USER 11 - has been on all buildings - all floors of TI, 0 and first floor of TD, second and third floor of TC 
-
 
 #### H. Modelling ####
 ## Data partition 
@@ -638,25 +636,30 @@ table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
 
 #### $ Models - SVM Radial ####
-svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmRadial", preProcess=c("scale", "center"), 
+svm_building_radial <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmRadial", preProcess=c("scale", "center"), 
                       trControl = Cross_validation)
 
-svm_building
+svm_building_radial
 # cost  Loss  Accuracy   Kappa // with all variables
-# 1.00  0.9979908  0.9968494
+# 1.00  0.9978140  0.9965681
 
-svm_building_prediction <- predict(svm_building,training_c_part_test)
-svm_building_prediction 
+svm_building_radial_prediction <- predict(svm_building,training_c_part_test)
+svm_building_radial_prediction 
 library(Metrics)
-accuracy(svm_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9994405
-table(svm_building_prediction)
-### C:  TI   TD   TC : 4729 4639 8506 
+accuracy(svm_building_radial_prediction, training_c_part_test$BUILDINGID)
+### C:0.9996643
+table(svm_building_radial_prediction)
+### C:  TI   TD   TC : 4723 4637 8514
 table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
 
+#### $ Models - SVM Poly - too slow  ####
+# svm_building_poly <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmPoly", preProcess=c("scale", "center"), 
+  #                     trControl = Cross_validation)
 
-#### $ Models - Bagging CART ####
+# svm_building_poly
+
+#### $ Models - Bagging CART - too slow ####
 # Bootstrapped Aggregation (Bagging) is an ensemble method that creates multiple models of the same type from different sub-samples of the same dataset. 
 # The predictions from each separate model are combined together to provide a superior result. 
 # This approach has shown participially effective for high-variance methods such as decision trees.
@@ -665,6 +668,15 @@ table(training_c_part_test$BUILDINGID)
 
 # bagging_building <-bagging( BUILDINGID ~., data = training_c_part_train)
 
+#### $ Models - C.50 - couldnt install ####
+install.packages("C50")
+library(C50)
+library(plyr)
+
+adaboost_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "C5.0", preProcess=c("scale", "center"), 
+                      trControl = Cross_validation)
+
+adaboost_building 
 
 #### $ Models - RF ####
 library(caret)
@@ -691,7 +703,27 @@ table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
 
 
-###  Z. ( Parallel Processing) ####
+
+#### I. Cleaning erroneous values ####
+str(USERID_14_error) ## 52 obs. of  321 variables:
+str(USERID_6_error) ## 397 obs. of  321 variables:
+
+training_clean_v2 <- training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)<=-30),]
+
+summary(training_clean_v2)
+str(training_clean)## 19861 obs = 19402+472-13
+str(training_error) ## 472 obs
+str(training_clean_v2) ## 19402 obs. of  321 variables:
+### training_clean_2 - doesnt include observations that have between -30 and 0 signal
+
+#### J. Check variance again ####
+nzv<-nearZeroVar(training_clean_v2[,1:312], saveMetrics= TRUE)
+
+nzv[nzv$nzv,][1:10,]
+str(nzv)
+nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero 
+
+#### Z. ( Parallel Processing) ####
 library(foreach)
 library(iterators)
 library(parallel)
