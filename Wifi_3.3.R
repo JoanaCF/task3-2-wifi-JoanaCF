@@ -436,57 +436,117 @@ names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x
 names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 68
 ### no conclusion for now
 
-#### D.7 check for variance #### 
-### $ general dataset ####
+#### E. Check for variance #### 
+## general dataset
 apply(training_clean[,c(1:312)], 2, var)
 names(which(apply(training_clean[,c(1:312)], 2, var)==0)) ## 0
 
-### $ by building ####
+## by building
 names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
 names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
 names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
 
-#### E. check for variance #### 
 #### F. Create a dataset with observations from -30 to 0 ####
-
 ## training_erroneous <-apply(training_clean,1,function(x)(x>=-30))
 training_error<-training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)>=-30),]
 summary(training_error)
 str(training_error)
 
 ## check what's going on
-hchart(training_error$BUILDINGID)
+#hchart(training_error$BUILDINGID)
 ### 454 only from TC building 
-hchart(training_error$FLOOR)
+#hchart(training_error$FLOOR)
 ### 252 only on 3 floor and 200 on 4th floor
-hchart(training_error$USERID)
+#hchart(training_error$USERID)
 ### 397 userid =6 // 52 userid=14 // 5 userid= 3 // 9 userid=1 
-hchart(training_error$PHONEID)
+#hchart(training_error$PHONEID)
 ### 397 phoneid = 19 // 52 phoneid=7 // 5 phoneid =16 // 13 phoneid 14
-hchart(training_error$RELATIVEPOSITION)
+#hchart(training_error$RELATIVEPOSITION)
 ### 464 outside 
-hchart(training_error$SPACEID)
+#hchart(training_error$SPACEID)
 ### no relevant conclusion
 
-ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
-                                                                                          ifelse(FLOOR ==1, "1",
-                                                                                                 ifelse(FLOOR == 2, "2", 
-                                                                                                        ifelse(FLOOR == 3, "3","4"))))))+
-  scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
+#ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                                                              #            ifelse(FLOOR ==1, "1",
+                                                                                      #           ifelse(FLOOR == 2, "2", 
+                                                                                     #                   ifelse(FLOOR == 3, "3","4"))))))+
+ # scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
-ggplot(data=training_error, aes(x=USERID, y=PHONEID)) + geom_point() + facet_wrap(training_error$BUILDINGID)
+#ggplot(data=training_error, aes(x=USERID, y=PHONEID)) + geom_point() + facet_wrap(training_error$BUILDINGID)
 ### C: Phone 19 belongs to user 6, phone 7 belongs to user 14, phone 14 belongs to user 1, user 9 and user 16 
 
-ggplot(data=training_error, aes(x=FLOOR, y=BUILDINGID)) + geom_point()
+#ggplot(data=training_error, aes(x=FLOOR, y=BUILDINGID)) + geom_point()
 ### C: Erros on thrid floor from TI and TC
 
-plot(training_error$FLOOR, training_error$BUILDINGID)
+#plot(training_error$FLOOR, training_error$BUILDINGID)
 ### C: zero floor errors are equally distributed, errors on 3d floor are mostly from TC and errors on 4th floor are only on TC
 
-#### G. Delete outliers
+#### G. Delete outliers (user 6 and user 14)
+# Phoneid 19 belongs to userid 6, 
+# phone 7 belongs to user 14
 
-### Phoneid 19 belongs to userid 6, 
-### phone 7 belongs to user 14
+### what's up with these users?
+
+# user 6 
+PHONEID_19 <-training_clean %>% filter(PHONEID==19)
+### C: 980 x 321
+#hchart(PHONEID_19$USERID)
+### only user 6 
+USERID_6 <-training_clean %>% filter(USERID==6)
+### C: 980 x 321
+#hchart(USERID_6$PHONEID)
+### only phone id 19 
+USERID_6_error <-training_error %>% filter(USERID==6)
+### C:  397 x 321
+
+# user 14 
+USERID_14 <-training_clean %>% filter(USERID==14)
+### C: 1,596 x 321
+#hchart(USERID_14$PHONEID)
+## only phone 7 
+USERID_14_error <-training_error %>% filter(USERID==14)
+### C:  52 x 321
+
+
+### all path - user 6 
+#ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
+### it has only passed through a corridor of the 3rd floor and a corridor of 4th floor of one building (TC)
+
+### path with errors- user 6 
+#ggplot(data=USERID_6_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6_error$FLOOR + USERID_6_error$BUILDINGID)
+### same path without errors - device problem?
+
+### all path - user 14 
+#ggplot(data=USERID_14, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14$FLOOR + USERID_14$BUILDINGID)
+### C: it has only been in floors 0 and 1 of TD and floors 2 and 3 of TC 
+
+### path with errors- user 14 
+#ggplot(data=USERID_14_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14_error$FLOOR + USERID_14_error$BUILDINGID)
+#qplot(USERID_14_error$TIMESTAMP)
+class(timestamp)
+
+### changing timestamp type 
+USERID_14_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_14_error$TIMESTAMP),origin="1970-01-01",tz="GMT")
+head(USERID_14_error$TIMESTAMP_dt)
+#hchart(USERID_14_error$TIMESTAMP_dt)
+
+#ggplot(data = USERID_14_error, aes(x = USERID_14_error$TIMESTAMP_dt, y = USERID_14_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_14_error$FLOOR)
+### C: errors happened in the beggining and in the end of its routh / path
+
+### changing timestamp type 
+USERID_6_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6_error$TIMESTAMP),origin="1970-01-01",tz="GMT")
+#head(USERID_6_error$TIMESTAMP_dt)
+
+#ggplot(data = USERID_6_error, aes(x = USERID_6_error$TIMESTAMP_dt, y = USERID_6_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_6_error$FLOOR)
+### C: errors happened in the beggining and in the end of its routh / path
+
+### all path - random user 
+
+#ggplot(data=(training_clean %>% filter(USERID==11)), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~BUILDINGID + FLOOR)
+
+## USER 1 - has been on all floors (everywhere) in building TI
+## USER 17 has been in TD - first floor and TC 0 floor 
+## USER 11 - has been on all buildings - all floors of TI, 0 and first floor of TD, second and third floor of TC 
 
 
 #### H. Modelling ####
@@ -506,6 +566,10 @@ Cross_validation <- trainControl(
 ## Training model
 training_c_part_test <- training_clean[-training_c_part$Resample1,c(1:321)]
 training_c_part_train <- training_clean[training_c_part$Resample1,c(1:321)]
+
+str(training_c_part_test) ## 17874 obs. 
+str(training_c_part_train) ## 1987 obs. 
+
 
 ## Check the distribution of training and testing sets 
 hchart(training_c_part_test$FLOOR)
@@ -540,7 +604,6 @@ Knn_building
 
 KNN_building_prediction <- predict(Knn_building,training_c_part_test)
 KNN_building_prediction
-install.packages(Metrics)
 library("Metrics")
 
 ## Accuracy 
@@ -551,12 +614,20 @@ table(KNN_building_prediction)
 table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
 
-#### $ Models - RF ####
-# set.seed(123)
-# RF_building <- train(BUILDINGID ~ ., data = training_c_part_train, 
-                  #  method = "rf", 
-                   # ntree=5 , 
-                    # tuneLength = 10,
-                     # trControl = Cross_validation)
 
-# RF_building
+#### $ Models - SVM ####
+svm_building <- train(BUILDINGID ~ ., data = training_c_part_train, method = "svmLinear3", preProcess=c("scale", "center"), 
+                      trControl = Cross_validation)
+
+svm_building
+# cost  Loss  Accuracy   Kappa 
+# 0.25  L1    0.9994975  0.9992106
+
+svm_building_prediction <- predict(svm_building,training_c_part_test)
+svm_building_prediction 
+accuracy(svm_building_prediction, training_c_part_test$BUILDINGID)
+### C: 0.9997203
+table(svm_building_prediction)
+### C:  TI   TD   TC : 4723 4638 8513 
+table(training_c_part_test$BUILDINGID)
+### C:  TI   TD   TC : 4723 4643 8508 
