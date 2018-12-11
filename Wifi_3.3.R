@@ -485,14 +485,16 @@ plot(training_error$FLOOR, training_error$BUILDINGID)
 
 #### G. Delete outliers
 
-Phoneid 19 belongs to userid 6, 
-phone 7 belongs to user 14
+### Phoneid 19 belongs to userid 6, 
+### phone 7 belongs to user 14
 
 
 #### H. Modelling ####
 ## Data partition 
 library(caret)
-training_c_part<-createDataPartition(y=training_clean$BUILDINGID, times = 2,  p=0.10)
+
+set.seed(123)
+training_c_part<-createDataPartition(y=training_clean$BUILDINGID, times = 1,  p=0.10)
 class(training_c_part)
 
 ## Cross validation 
@@ -502,12 +504,28 @@ Cross_validation <- trainControl(
   repeats = 3)
 
 ## Training model
-training_c_part_test <- training_clean[training_c_part$Resample1,c(1:321)]
-training_c_part_train <- training_clean[training_c_part$Resample2,c(1:321)]
+training_c_part_test <- training_clean[-training_c_part$Resample1,c(1:321)]
+training_c_part_train <- training_clean[training_c_part$Resample1,c(1:321)]
 
-## Proportion tables
+## Check the distribution of training and testing sets 
+hchart(training_c_part_test$FLOOR)
+hchart(training_c_part_train$FLOOR)
+hchart(training_clean$FLOOR)
+
+prop.table(table(training_c_part_test$FLOOR))
+prop.table(table(training_c_part_train$FLOOR))
+prop.table(table(training_clean$FLOOR))
+### C: quite balanced distribution of floor
+
+ggplot(data=training_clean, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+ggplot(data=training_c_part_test, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+ggplot(data=training_c_part_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+### C: quite balanced distributions of location (latitude and longitude)
 
 prop.table(table(training_c_part_test$BUILDINGID))
+prop.table(table(training_c_part_train$BUILDINGID))
+prop.table(table(training_clean$BUILDINGID))
+### C: quite balanced distribution of building ID 
 
 #### $ Models - KNN ####
 summary(training_c_part_train)
@@ -518,7 +536,7 @@ Knn_building <- train(BUILDINGID ~ ., data = training_c_part_train, method = "kn
                                          trControl = Cross_validation)
 
 Knn_building
-### C:  K=9 //  accuracy - 0.977006 // Kappa - 0.9636082
+### C:  K=7 //  accuracy - 0.9852375  and kappa - 0.9766744
 
 KNN_building_prediction <- predict(Knn_building,training_c_part_test)
 KNN_building_prediction
@@ -527,18 +545,18 @@ library("Metrics")
 
 ## Accuracy 
 accuracy(KNN_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9808757
+### C: 0.9865167
 table(KNN_building_prediction) 
-### C: 258 251 489 
+### C:  TI   TD   TC : 4687 4483 8704 
 table(training_c_part_test$BUILDINGID)
-### C: 263 260 475 
+### C:  TI   TD   TC : 4723 4643 8508 
 
 #### $ Models - RF ####
-set.seed(123)
-RF_building <- train(BUILDINGID ~ ., data = training_c_part_train, 
-                    method = "rf", 
-                    ntree=5 , 
-                    tuneLength = 10,
-                    trControl = Cross_validation)
+# set.seed(123)
+# RF_building <- train(BUILDINGID ~ ., data = training_c_part_train, 
+                  #  method = "rf", 
+                   # ntree=5 , 
+                    # tuneLength = 10,
+                     # trControl = Cross_validation)
 
-RF_building
+# RF_building
