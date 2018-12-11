@@ -53,7 +53,7 @@ validationData <- read_csv("Desktop/UBIQUM/2. Tasks/Course 3/Task 3/Data/UJIndoo
 ### C: Both datasets have 529 variables and all of them are the same 
 ### C: no NAs in neither 
 
-### $ TIMESTAMP - new variable set as.POSIXlt ####
+### $ TIMESTAMP ####
 ### training 
 library(ggplot2)
 #qplot(trainingData$TIMESTAMP)
@@ -75,7 +75,7 @@ library(ggplot2)
 ### C: assuming an origin of 01/01/2013 - from 19/09 to 10/08
 
 
-### $ PHONEID - changed data type to factor ####
+### $ PHONEID ####
 ### training
 library(highcharter)
 #hchart(trainingData$PHONEID)
@@ -94,7 +94,7 @@ validationData$PHONEID<-as.factor(validationData$PHONEID)
 ### C: some code ids missing: 1, 3, 6, 7, 8, 10, 11, 16, 17, 18, 19, 22, 23, 24 /only 11 levels - different ones than the testing set 
 
 
-### $ USERID - changed data type to factor ####
+### $ USERID ####
 ### training 
 #hchart(trainingData$USERID)
 trainingData$USERID<-as.factor(trainingData$USERID)
@@ -112,7 +112,7 @@ validationData$USERID<-as.factor(validationData$USERID)
 ### C: CAREFUL using this variable for classification / prediction 
 
 
-### $ RELATIVEPOSITION - changed data type to factor ONLY IN THE TRAINING DATASET ####
+### $ RELATIVEPOSITION ####
 ### training 
 #str(trainingData$RELATIVEPOSITION)
 ### C: 3329 inside and 16608 outside - why is the outside useful?
@@ -129,7 +129,7 @@ trainingData$RELATIVEPOSITION <- factor(trainingData$RELATIVEPOSITION,
 ### C: No information on this in validation set  
 
 
-### $ SPACEID - changed data type to factor ####
+### $ SPACEID ####
 ### training
 #summary(trainingData$SPACEID)
 #str(trainingData$SPACEID)
@@ -146,7 +146,7 @@ validationData$SPACEID <- as.factor(validationData$SPACEID)
 ### C: No information on this in validation set  
 
 
-### $ BUILDINGID - changed data type and labels into 1,2,3 ####
+### $ BUILDINGID ####
 ### training 
 #hchart(trainingData$BUILDINGID)
 trainingData$BUILDINGID<-as.factor(trainingData$BUILDINGID)
@@ -163,7 +163,7 @@ validationData$BUILDINGID <- factor(validationData$BUILDINGID, levels= c(0,1,2),
 ### C: highest frequency on building 1 (> 500) 
 
 
-### $ FLOOR - changed data type to factor ####  
+### $ FLOOR ####  
 ### training 
 #hchart(trainingData$FLOOR)
 trainingData$FLOOR <- as.factor(trainingData$FLOOR)
@@ -174,7 +174,7 @@ trainingData$FLOOR <- as.factor(trainingData$FLOOR)
 validationData$FLOOR <- as.factor(validationData$FLOOR)
 ### C: least frequent - 0 and 4th floor. most frequent 1st floor
 
-### $ LATITUDE - no change, for now ####
+### $ LATITUDE ####
 # training 
 #hchart(trainingData$LATITUDE)
 #summary(trainingData$LATITUDE)
@@ -190,7 +190,7 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 ### C: min - 4864748; max - 4865017 - similar range 
 
 
-### $ LONGITUDE - no change ####
+### $ LONGITUDE ####
 # training
 #hchart(trainingData$LONGITUDE)
 #summary(trainingData$LONGITUDE)
@@ -264,7 +264,7 @@ ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
 
 #### C.3 Explore wap-variables ####
 library(dplyr)
-#### C.3.1 New dataset without waps that only have 100 ####
+#### D.1 New dataset - no waps with 100 only ####
 
 ### how many attributes whose min value is 100 
 sum(apply(trainingData,2,function(x)(min(x==100))))
@@ -296,17 +296,17 @@ str(validation_clean)
 apply(validation_clean,2,function(x)names(min(x==100))) ### NULL  - checked
 ### C: new dataset - only with 321 variables
 
-#### D.3.2 New version of dataset 100 <- -105 ####
+#### D.2 New version dataset -105 instead of 100 ####
 training_clean[training_clean==100] <- -105
 
-### D.3.3 New version of dataset - eliminate rows with all 100 ####
+#### D.3 New version of dataset - no obs with 100 only ####
 apply(training_clean[,1:312],1,mean) != -105
 training_clean <- training_clean[apply(training_clean[,1:312],1,mean)!= -105,]
 str(training_clean)
 str(trainingData)
 
 
-#### D.3.4 Separate dataset by building ####
+#### D.4 Separate dataset by building ####
 str(training_clean)
 str(training_clean$BUILDINGID)
 sum(apply(training_clean[,c(1:312)],2,function(x)min(x=="100"))) ### Checking 
@@ -320,8 +320,8 @@ train_TC<-training_clean %>% filter(BUILDINGID=="TC")
 ### C: TC building - 9,492 x 321
 ### C: I am missing the same split on the validaton dataset 
 
-#### D.3.5 Sub sample by building and floor ####
-### $ TI Building - Floor 0, 1, 2 and 3 ####
+#### D.5 Sub sample by building and floor ####
+### $ TI Building - Floor 0, 1, 2 and 3 
 train_TI_F0<-train_TI %>% filter(FLOOR==0)
 ### C: TI building and floor 0 - 1,059 x 271
 
@@ -334,7 +334,7 @@ train_TI_F2<-train_TI %>% filter(FLOOR==2)
 train_TI_F3<-train_TI %>% filter(FLOOR==3)
 ### C: TI building and floor 2 - 1,391 x 271 
 
-### $ TD Building - Floor 0, 1, 2 and 3 ####
+### $ TD Building - Floor 0, 1, 2 and 3 
 train_TD %>% filter(FLOOR==0)
 train_TD_F0<-train_TD %>% filter(FLOOR==0)
 ### C: TD building and floor 0 - 1,368 x 271
@@ -348,7 +348,7 @@ train_TD_F2<-train_TD %>% filter(FLOOR==2)
 train_TD_F3<-train_TD %>% filter(FLOOR==3)
 ### C: TD building and floor 3 - 948  x 271
 
-### $ TC Building - Floor 0, 1, 2, 3 and 4 ####
+### $ TC Building - Floor 0, 1, 2, 3 and 4 
 train_TC_F0<-train_TC %>% filter(FLOOR==0)
 ### C: TC building and floor 0 - 1,942 x 271
 
@@ -364,7 +364,7 @@ train_TC_F3<-train_TC %>% filter(FLOOR==3)
 train_TC_F4<-train_TC %>% filter(FLOOR==4)
 ### C: TC building and floor 4 - 1,102 x 271
 
-#### D.5 Explore wap-variables in different datasets #### 
+#### E. Explore wap-variables in different datasets #### 
 
 ### Latitude and longitude - building and floor 
 ggplot(data=train_TI, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
@@ -374,7 +374,7 @@ ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~F
 ggplot(data=train_TC, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~FLOOR)
 ### Some differences - 0, 1 and 2 floor - few observation son south side. 3rd floor is the more complete and 4th floor/ south-east is really bad
 
-### $ signal between -30 to 0 // Building and floor ####
+### $ signal between -30 to 0 // Building and floor 
 sum(apply(training_clean[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 682
 sum(apply(train_TI[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 2
 sum(apply(train_TD[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))) ### 8 
@@ -396,7 +396,7 @@ which(apply(train_TC_F3[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0))
 which(apply(train_TC_F4[,c(1:312)],1,function(x) length(which(x > -30 & x <= 0)))>0)
 ### C: treat this dataset separately 
 
-### $ signal lower than -90 // Building and floor ####
+### $ signal lower than -90 // Building and floor 
 names(which(apply(train_TC[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 121
 names(which(apply(train_TD[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 163
 names(which(apply(train_TI[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 141
@@ -418,7 +418,7 @@ names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x <= -90)))>
 names(which(apply(train_TI_F3[,c(1:312)],2,function(x) length(which(x <= -90)))>0)) ### 114
 ### no strong conclusion from now 
 
-### $ signal between -90 to -30 // Building and floor ####
+### $ signal between -90 to -30 // Building and floor 
 names(which(apply(train_TI_F0[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 89
 names(which(apply(train_TI_F1[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 101
 names(which(apply(train_TI_F2[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 112
@@ -436,7 +436,7 @@ names(which(apply(train_TC_F3[,c(1:312)],2,function(x) length(which(x >= -90 & x
 names(which(apply(train_TC_F4[,c(1:312)],2,function(x) length(which(x >= -90 & x <=-30)))>0)) ### 68
 ### no conclusion for now
 
-#### E. Check for variance #### 
+#### F. Check for variance #### 
 ## general dataset
 apply(training_clean[,c(1:312)], 2, var)
 names(which(apply(training_clean[,c(1:312)], 2, var)==0)) ## 0
@@ -446,7 +446,7 @@ names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
 names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
 names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
 
-#### F. Create a dataset with observations from -30 to 0 ####
+#### G. Create a dataset with observations from -30 to 0 ####
 ## training_erroneous <-apply(training_clean,1,function(x)(x>=-30))
 training_error<-training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)>=-30),]
 summary(training_error)
@@ -557,6 +557,8 @@ set.seed(123)
 training_c_part<-createDataPartition(y=training_clean$BUILDINGID, times = 1,  p=0.10)
 class(training_c_part)
 
+
+
 ## Cross validation 
 Cross_validation <- trainControl(
   method = "repeatedcv",
@@ -591,16 +593,18 @@ prop.table(table(training_c_part_train$BUILDINGID))
 prop.table(table(training_clean$BUILDINGID))
 ### C: quite balanced distribution of building ID 
 
+colnames(training_c_part_train)
+
 #### $ Models - KNN ####
 summary(training_c_part_train)
 str(training_c_part_train)
 
 set.seed(123)
-Knn_building <- train(BUILDINGID ~ ., data = training_c_part_train, method = "knn", preProcess=c("scale", "center"), 
+Knn_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "knn", preProcess=c("scale", "center"), 
                                          trControl = Cross_validation)
 
 Knn_building
-### C:  K=7 //  accuracy - 0.9852375  and kappa - 0.9766744
+### C:  K=7 //  accuracy - 0.9813747  0.9705470
 
 KNN_building_prediction <- predict(Knn_building,training_c_part_test)
 KNN_building_prediction
@@ -608,26 +612,88 @@ library("Metrics")
 
 ## Accuracy 
 accuracy(KNN_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9865167
+### C: 0.9838313
 table(KNN_building_prediction) 
-### C:  TI   TD   TC : 4687 4483 8704 
+### C:  TI   TD   TC : 4670 4466 8738 
 table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
 
 
-#### $ Models - SVM ####
-svm_building <- train(BUILDINGID ~ ., data = training_c_part_train, method = "svmLinear3", preProcess=c("scale", "center"), 
+#### $ Models - SVM Linear 3####
+svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmLinear3", preProcess=c("scale", "center"), 
                       trControl = Cross_validation)
 
 svm_building
-# cost  Loss  Accuracy   Kappa 
-# 0.25  L1    0.9994975  0.9992106
+# cost  Loss  Accuracy   Kappa // with all variables
+# 0.25  L1    0.9993291  0.9989440
 
 svm_building_prediction <- predict(svm_building,training_c_part_test)
 svm_building_prediction 
+library(Metrics)
 accuracy(svm_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9997203
+### C: 0.9996643
 table(svm_building_prediction)
-### C:  TI   TD   TC : 4723 4638 8513 
+### C:  TI   TD   TC : 4723 4637 8514 
 table(training_c_part_test$BUILDINGID)
 ### C:  TI   TD   TC : 4723 4643 8508 
+
+#### $ Models - SVM Radial ####
+svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmRadial", preProcess=c("scale", "center"), 
+                      trControl = Cross_validation)
+
+svm_building
+# cost  Loss  Accuracy   Kappa // with all variables
+# 1.00  0.9979908  0.9968494
+
+svm_building_prediction <- predict(svm_building,training_c_part_test)
+svm_building_prediction 
+library(Metrics)
+accuracy(svm_building_prediction, training_c_part_test$BUILDINGID)
+### C: 0.9994405
+table(svm_building_prediction)
+### C:  TI   TD   TC : 4729 4639 8506 
+table(training_c_part_test$BUILDINGID)
+### C:  TI   TD   TC : 4723 4643 8508 
+
+
+#### $ Models - Bagging CART ####
+# Bootstrapped Aggregation (Bagging) is an ensemble method that creates multiple models of the same type from different sub-samples of the same dataset. 
+# The predictions from each separate model are combined together to provide a superior result. 
+# This approach has shown participially effective for high-variance methods such as decision trees.
+
+# library(ipred)
+
+# bagging_building <-bagging( BUILDINGID ~., data = training_c_part_train)
+
+
+#### $ Models - RF ####
+library(caret)
+set.seed(123)
+rf_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, 
+                      method = "rf", ntree=5 ,
+                      tuneLength = 10, 
+                      trControl = Cross_validation)
+rf_building
+
+### C:
+# mtry  Accuracy   Kappa
+#   2   0.9523877  0.9244953
+#  53   0.9979832  0.9968311
+
+
+library("Metrics")
+rf_building_prediction <- predict(rf_building,training_c_part_test)
+accuracy(rf_building_prediction, training_c_part_test$BUILDINGID)
+### C: 0.998993
+table(rf_building_prediction) 
+### C:  TI   TD   TC : 4723 4661 8490 
+table(training_c_part_test$BUILDINGID) 
+### C:  TI   TD   TC : 4723 4643 8508 
+
+
+###  Z. ( Parallel Processing) ####
+library(foreach)
+library(iterators)
+library(parallel)
+library(doMC)
+registerDoMC(cores = 4)
