@@ -628,7 +628,7 @@ validation_v3<-validation_clean[,-c(317:321)]
 ## change 100 by -105 
 validation_v3[validation_v3==100] <- -105
 
-#### L. Modelling ####
+#### L. Modelling BUILDING ID - with all waps ####
 library("Metrics")
 #### $ Models - KNN ####
 colnames(training_c_part_train)
@@ -741,7 +741,7 @@ str(training_clean_v4$Best_wap) ## 222 levels
 str(training_clean_v4) ## 19402 obs. of  317 variables:
 View(training_clean_v4$Best_wap)
 
-#### O. Modelling - with only best_wap variable ####
+#### O. Modelling BUILDING ID -  with only best_wap variable ####
 set.seed(123)
 training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10, list = FALSE)
 class(training_sample_2nd) ### list 
@@ -829,24 +829,72 @@ training_clean_v3$BuildingID_Pred <- svm_building_prediction_train
 summary(training_clean_v3)
 
 #### Q. Split the dataset by building ####
-
 # TI 
 training_TI_v3<-training_clean_v3 %>% filter(BUILDINGID=="TI")
 # summary(training_TI_v3)
-
 validation_TI_v3<-validation_v3 %>% filter(BUILDINGID=="TI")
 # summary(validation_TI_v3)
 
 # TD
 training_TD_v3<-training_clean_v3 %>% filter(BUILDINGID=="TD")
 # summary(training_TD_v3)
-
 validation_TD_v3<-validation_v3 %>% filter(BUILDINGID=="TD")
 # summary(validation_TD_v3)
 
 # TC
 training_TC_v3<-training_clean_v3 %>% filter(BUILDINGID=="TC")
 summary(training_TC_v3)
-
 validation_TC_v3<-validation_v3 %>% filter(BUILDINGID=="TC")
 # summary(validation_TC_v3)
+
+#### R. Modelling - FLOOR // Building_Pred and Best_wap####
+
+#### Create sample ####
+
+set.seed(123)
+training_sample_floor<-createDataPartition(y=training_clean_v4$FLOOR, times = 2,  p=0.10)
+class(training_sample_floor) ### list 
+
+## Training model ( sample )
+training_floor_train <- training_clean_v4[training_sample_floor$Resample1,]
+testing_floor_train <- training_clean_v4[training_sample_floor$Resample2,]
+str(training_floor_train) ## 1942 obs. of  316 variables
+summary(training_floor_train)
+
+
+#### $ KNN - could not apply it to the validation dataset - had to change the type ####
+summary(training_clean_v4)
+
+set.seed(123)
+Knn_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
+                   data = training_floor_train, 
+                   method = "knn", 
+                   trControl = Cross_validation, 
+                   preProcess= c("center","scale"))
+
+Knn_floor ## k = 5 / accuracy -  0.7865880 kappa - 0.7208313
+saveRDS(Knn_floor,file = "knn_floor_real.RDS")
+Knn_floor_prediction <- predict(Knn_floor,validation_v4.1) 
+Knn_floor_prediction
+
+## Accuracy 
+accuracy(Knn_floor_prediction, validation_v4.1$FLOOR) 
+### C: 0.7962128
+
+#### $ SVM Radial ####
+set.seed(123)
+svm_Radial_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
+                          data = training_floor_train, 
+                          method = "svmRadial", 
+                          trControl = Cross_validation, 
+                          preProcess= c("center","scale"))
+
+svm_Radial_floor ## C - 1.00  Accuracy - 0.8927778  Kappa - 0.8606872
+saveRDS(svm_Radial_floor,file = "svm_Radial_floor.RDS")
+svm_Radial_floor_prediction <- predict(svm_Radial_floor,validation_v4.1) 
+svm_Radial_floor_prediction
+
+## Accuracy 
+accuracy(svm_Radial_floor_prediction, validation_v4.1$FLOOR) 
+### C:  0.8782687
+
