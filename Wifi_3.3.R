@@ -446,31 +446,31 @@ names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
 names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
 names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
 
-#### G. Create a dataset with observations from -30 to 0 ####
+#### G. Create a dataset with erroneous values ####
 ## training_erroneous <-apply(training_clean,1,function(x)(x>=-30))
 training_error<-training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)>=-30),]
 summary(training_error)
 str(training_error)
 
 ## check what's going on
-#hchart(training_error$BUILDINGID)
+hchart(training_error$BUILDINGID)
 ### 454 only from TC building 
-#hchart(training_error$FLOOR)
+hchart(training_error$FLOOR)
 ### 252 only on 3 floor and 200 on 4th floor
-#hchart(training_error$USERID)
+hchart(training_error$USERID)
 ### 397 userid =6 // 52 userid=14 // 5 userid= 3 // 9 userid=1 
-#hchart(training_error$PHONEID)
+hchart(training_error$PHONEID)
 ### 397 phoneid = 19 // 52 phoneid=7 // 5 phoneid =16 // 13 phoneid 14
 #hchart(training_error$RELATIVEPOSITION)
 ### 464 outside 
 #hchart(training_error$SPACEID)
 ### no relevant conclusion
 
-#ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
-                                                                              #            ifelse(FLOOR ==1, "1",
-                                                                                      #           ifelse(FLOOR == 2, "2", 
-                                                                                     #                   ifelse(FLOOR == 3, "3","4"))))))+
- # scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
+ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                                                                ifelse(FLOOR ==1, "1",
+                                                                                       ifelse(FLOOR == 2, "2", 
+                                                                                               ifelse(FLOOR == 3, "3","4"))))))+
+  scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
 #ggplot(data=training_error, aes(x=USERID, y=PHONEID)) + geom_point() + facet_wrap(training_error$BUILDINGID)
 ### C: Phone 19 belongs to user 6, phone 7 belongs to user 14, phone 14 belongs to user 1, user 9 and user 16 
@@ -490,7 +490,7 @@ str(training_error)
 # user 6 
 PHONEID_19 <-training_clean %>% filter(PHONEID==19)
 ### C: 980 x 321
-#hchart(PHONEID_19$USERID)
+hchart(PHONEID_19$USERID)
 ### only user 6 
 USERID_6 <-training_clean %>% filter(USERID==6)
 ### C: 980 x 321
@@ -508,19 +508,19 @@ USERID_14_error <-training_error %>% filter(USERID==14)
 ### C:  52 x 321
 
 ### all path - user 6 
-#ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
+ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
 ### it has only passed through a corridor of the 3rd floor and a corridor of 4th floor of one building (TC)
 
 ### path with errors- user 6 
-#ggplot(data=USERID_6_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6_error$FLOOR + USERID_6_error$BUILDINGID)
+ggplot(data=USERID_6_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6_error$FLOOR + USERID_6_error$BUILDINGID)
 ### same path without errors - device problem?
 
 ### all path - user 14 
-#ggplot(data=USERID_14, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14$FLOOR + USERID_14$BUILDINGID)
+ggplot(data=USERID_14, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14$FLOOR + USERID_14$BUILDINGID)
 ### C: it has only been in floors 0 and 1 of TD and floors 2 and 3 of TC 
 
 ### path with errors- user 14 
-#ggplot(data=USERID_14_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14_error$FLOOR + USERID_14_error$BUILDINGID)
+ggplot(data=USERID_14_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14_error$FLOOR + USERID_14_error$BUILDINGID)
 #qplot(USERID_14_error$TIMESTAMP)
 class(timestamp)
 
@@ -536,7 +536,7 @@ USERID_14_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_14_error$TIMESTAMP),o
 USERID_6_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6_error$TIMESTAMP),origin="1970-01-01",tz="GMT")
 #head(USERID_6_error$TIMESTAMP_dt)
 
-#ggplot(data = USERID_6_error, aes(x = USERID_6_error$TIMESTAMP_dt, y = USERID_6_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_6_error$FLOOR)
+ggplot(data = USERID_6_error, aes(x = USERID_6_error$TIMESTAMP_dt, y = USERID_6_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_6_error$FLOOR)
 ### C: errors happened in the beggining and in the end of its routh / path
 
 ### all path - random user 
@@ -547,15 +547,49 @@ USERID_6_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6_error$TIMESTAMP),ori
 ## USER 17 has been in TD - first floor and TC 0 floor 
 ## USER 11 - has been on all buildings - all floors of TI, 0 and first floor of TD, second and third floor of TC 
 
-#### H. Modelling ####
-## Data partition 
+#### H. Cleaning erroneous values ####
+## cleaning observations that a signal between -30 and 0 
+## these are wrong/ erroneous values, since the maximum signal is -30. 
+
+# str(USERID_14_error) ## 52 obs. of  321 variables:
+# str(USERID_6_error) ## 397 obs. of  321 variables:
+
+training_clean_v2 <- training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)<=-30),]
+
+# summary(training_clean_v2)
+# str(training_clean)## 19861 obs = 19402+472-13
+# str(training_error) ## 472 obs
+# str(training_clean_v2) ## 19402 obs. of  321 variables:
+
+## training_clean_2 is the new dataset 
+
+#### I. Feature selection ####
+## Deleting columns: "SPACEID" "RELATIVEPOSITION" "USERID" "PHONEID" "TIMESTAMP"       
+training_clean_v3 <- training_clean_v2[,-c(317:321)] 
+
+# colnames(training_clean_v3)
+# str(training_clean_v3) ## 19402 obs. of  316 variables
+
+#### J. Parallel Processing ####
+library(foreach)
+library(iterators)
+library(parallel)
+library(doMC)
+registerDoMC(cores = 4)
+
+# library(doSNOW) ### Error: object 'doSNOW' not found
+
+
+#### I. Creating a sample / data partition ####
 library(caret)
 
 set.seed(123)
-training_c_part<-createDataPartition(y=training_clean$BUILDINGID, times = 1,  p=0.10)
-class(training_c_part)
+training_sample<-createDataPartition(y=training_clean_v3$BUILDINGID, times = 1,  p=0.10)
+class(training_sample) ### list 
 
-
+## Training model ( sample )
+training_c_part_train <- training_clean_v3[training_sample$Resample1,]
+str(training_c_part_train) ## 1942 obs. of  316 variables
 
 ## Cross validation 
 Cross_validation <- trainControl(
@@ -563,58 +597,64 @@ Cross_validation <- trainControl(
   number = 10,
   repeats = 3)
 
-## Training model
-training_c_part_test <- training_clean[-training_c_part$Resample1,c(1:321)]
-training_c_part_train <- training_clean[training_c_part$Resample1,c(1:321)]
-
-str(training_c_part_test) ## 17874 obs. 
-str(training_c_part_train) ## 1987 obs. 
-
-
 ## Check the distribution of training and testing sets 
-hchart(training_c_part_test$FLOOR)
 hchart(training_c_part_train$FLOOR)
-hchart(training_clean$FLOOR)
-
-prop.table(table(training_c_part_test$FLOOR))
+hchart(training_clean_v3$FLOOR)
 prop.table(table(training_c_part_train$FLOOR))
-prop.table(table(training_clean$FLOOR))
+prop.table(table(training_clean_v3$FLOOR))
 ### C: quite balanced distribution of floor
 
-ggplot(data=training_clean, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
-ggplot(data=training_c_part_test, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+ggplot(data=training_clean_v3, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 ggplot(data=training_c_part_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 ### C: quite balanced distributions of location (latitude and longitude)
 
-prop.table(table(training_c_part_test$BUILDINGID))
 prop.table(table(training_c_part_train$BUILDINGID))
-prop.table(table(training_clean$BUILDINGID))
+prop.table(table(training_clean_v3$BUILDINGID))
 ### C: quite balanced distribution of building ID 
 
-colnames(training_c_part_train)
+#### J. Prepare validation dataset ####
+## Make the same amendments, such as delete the same variables and changing 100 to -105 
 
+## delete columns
+# str(training_c_part_train) ## 1942 obs. of  316 variables:
+# str(validation_clean) ## 1111 obs. of  321 variables:
+# colnames(validation_clean)
+
+validation_v3<-validation_clean[,-c(317:321)] 
+# colnames(validation_v3)
+# str(validation_v3) ## 1111 obs. of  316 variables:
+
+## change 100 by -105 
+validation_v3[validation_v3==100] <- -105
+
+#### L. Modelling ####
+library("Metrics")
 #### $ Models - KNN ####
-summary(training_c_part_train)
-str(training_c_part_train)
+colnames(training_c_part_train)
+is.factor(training_c_part_train$BUILDINGID)
 
 set.seed(123)
-Knn_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "knn", preProcess=c("scale", "center"), 
-                                         trControl = Cross_validation)
-
-Knn_building
-### C:  K=7 //  accuracy - 0.9813747  0.9705470
-
-KNN_building_prediction <- predict(Knn_building,training_c_part_test)
+Knn_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+                      data = training_c_part_train, 
+                      method = "knn", 
+                      trControl = Cross_validation)
+Knn_building ##  K=5 //  accuracy - 0.9953652 kappa - 0.9927903 // 1 min 
+saveRDS(Knn_building,file = "KNN_BUILDING.RDS")
+KNN_building_prediction <- predict(Knn_building,validation_v3) 
 KNN_building_prediction
-library("Metrics")
 
 ## Accuracy 
-accuracy(KNN_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9838313
+accuracy(KNN_building_prediction, validation_v3$BUILDINGID)
+### C: 0.9909991
 table(KNN_building_prediction) 
-### C:  TI   TD   TC : 4670 4466 8738 
-table(training_c_part_test$BUILDINGID)
-### C:  TI   TD   TC : 4723 4643 8508 
+### C:  TI   TD   TC : 529 317 265 
+table(validation_v3$BUILDINGID)
+### C:  TI   TD   TC : 536 307 268 
+### C: TC is quite well predicted only 3 people were not predicted accurately
+
+
+##### Redo from here onwards ####
+
 
 
 #### $ Models - SVM Linear 3####
@@ -704,17 +744,6 @@ table(training_c_part_test$BUILDINGID)
 
 
 
-#### I. Cleaning erroneous values ####
-str(USERID_14_error) ## 52 obs. of  321 variables:
-str(USERID_6_error) ## 397 obs. of  321 variables:
-
-training_clean_v2 <- training_clean[apply(training_clean[,c(1:312)],1,function(x)max(x)<=-30),]
-
-summary(training_clean_v2)
-str(training_clean)## 19861 obs = 19402+472-13
-str(training_error) ## 472 obs
-str(training_clean_v2) ## 19402 obs. of  321 variables:
-### training_clean_2 - doesnt include observations that have between -30 and 0 signal
 
 #### J. Check variance again ####
 nzv<-nearZeroVar(training_clean_v2[,1:312], saveMetrics= TRUE)
@@ -723,9 +752,14 @@ nzv[nzv$nzv,][1:10,]
 str(nzv)
 nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero 
 
-#### Z. ( Parallel Processing) ####
-library(foreach)
-library(iterators)
-library(parallel)
-library(doMC)
-registerDoMC(cores = 4)
+#### K. Decision tree ####
+
+colnames(training_clean_v2)
+library(rpart)
+Dt_building <- rpart(BUILDINGID ~ . - LONGITUDE - LATITUDE , data=training_clean_v2)
+printcp(Dt_building)
+plotcp(Dt_building)
+summary(Dt_building)
+rpart.plot(Dt_building)
+
+
