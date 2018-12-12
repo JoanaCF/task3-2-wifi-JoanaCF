@@ -653,6 +653,7 @@ table(validation_v3$BUILDINGID)
 ### C: TC is quite well predicted only 3 people were not predicted accurately
 
 #### $ Models - SVM Linear 3 ####
+set.seed (123)
 svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
                       data = training_c_part_train, 
                       method = "svmLinear3", 
@@ -691,75 +692,32 @@ table(validation_v3$BUILDINGID)
 ### C:  TI   TD   TC : 536 307 268 
 ### Again, TC has been perfectly predicted, and only two observations' were wrongly predicted. 
 
-##### Redo from here onwards ####
-
-#### $ Models - SVM Poly - too slow  ####
-# svm_building_poly <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmPoly", preProcess=c("scale", "center"), 
-  #                     trControl = Cross_validation)
-
-# svm_building_poly
-
-#### $ Models - Bagging CART - too slow ####
-# Bootstrapped Aggregation (Bagging) is an ensemble method that creates multiple models of the same type from different sub-samples of the same dataset. 
-# The predictions from each separate model are combined together to provide a superior result. 
-# This approach has shown participially effective for high-variance methods such as decision trees.
-
-# library(ipred)
-
-# bagging_building <-bagging( BUILDINGID ~., data = training_c_part_train)
-
-#### $ Models - C.50 - couldnt install ####
-install.packages("C50")
-library(C50)
-library(plyr)
-
-adaboost_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "C5.0", preProcess=c("scale", "center"), 
-                      trControl = Cross_validation)
-
-adaboost_building 
-
 #### $ Models - RF ####
-library(caret)
 set.seed(123)
 rf_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, 
-                      method = "rf", ntree=5 ,
-                      tuneLength = 10, 
-                      trControl = Cross_validation)
+                     method = "rf", ntree=5 ,
+                     tuneLength = 10, 
+                     trControl = Cross_validation)
 rf_building
 
 ### C:
 # mtry  Accuracy   Kappa
-#   2   0.9523877  0.9244953
-#  53   0.9979832  0.9968311
+#   2   0.9697573  0.9525263
+#  36   0.9948523  0.9919686
 
-
-library("Metrics")
-rf_building_prediction <- predict(rf_building,training_c_part_test)
-accuracy(rf_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.998993
+rf_building_prediction <- predict(rf_building,validation_v3)
+accuracy(rf_building_prediction, validation_v3$BUILDINGID)
+### C: 0.9765977
 table(rf_building_prediction) 
-### C:  TI   TD   TC : 4723 4661 8490 
-table(training_c_part_test$BUILDINGID) 
-### C:  TI   TD   TC : 4723 4643 8508 
+### C:  TI   TD   TC : 525 325 261 
+table(validation_v3$BUILDINGID) 
+### C:  TI   TD   TC : 536 307 268 
+### C: worse prediction - not one single class predicted accurately. still TC is the best one and TD the worst. 
 
-
-
-
-#### J. Check variance again ####
+#### M. Check variance again ####
 nzv<-nearZeroVar(training_clean_v2[,1:312], saveMetrics= TRUE)
 
 nzv[nzv$nzv,][1:10,]
 str(nzv)
 nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero 
-
-#### K. Decision tree ####
-
-colnames(training_clean_v2)
-library(rpart)
-Dt_building <- rpart(BUILDINGID ~ . - LONGITUDE - LATITUDE , data=training_clean_v2)
-printcp(Dt_building)
-plotcp(Dt_building)
-summary(Dt_building)
-rpart.plot(Dt_building)
-
 
