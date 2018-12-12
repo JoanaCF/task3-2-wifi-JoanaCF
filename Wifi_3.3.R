@@ -816,10 +816,9 @@ svm_radial_building_2nd <- train(BUILDINGID ~ Best_wap,
 set.seed(123)
 rf_building_2nd <- train(BUILDINGID ~ Best_wap, 
                                  data = training_clean_v4, 
-                                 method = "rf", 
+                                 method = "rf", ntree=5 ,
+                         tuneLength = 10, 
                                  trControl = Cross_validation)
-
-
 
 #### P. Building prediction added to datasets
 validation_v3$BuildingID_Pred <- svm_building_prediction
@@ -828,7 +827,7 @@ summary(validation_v3)
 training_clean_v3$BuildingID_Pred <- svm_building_prediction_train
 summary(training_clean_v3)
 
-#### Q. Split the dataset by building ####
+#### P. Split the dataset by building ####
 # TI 
 training_TI_v3<-training_clean_v3 %>% filter(BUILDINGID=="TI")
 # summary(training_TI_v3)
@@ -847,9 +846,9 @@ summary(training_TC_v3)
 validation_TC_v3<-validation_v3 %>% filter(BUILDINGID=="TC")
 # summary(validation_TC_v3)
 
-#### R. Modelling - FLOOR // Building_Pred and Best_wap####
+#### Q. Modelling - FLOOR  ####
 
-#### Create sample ####
+#### R. Create sample ####
 
 set.seed(123)
 training_sample_floor<-createDataPartition(y=training_clean_v4$FLOOR, times = 2,  p=0.10)
@@ -862,7 +861,8 @@ str(training_floor_train) ## 1942 obs. of  316 variables
 summary(training_floor_train)
 
 
-#### $ KNN - could not apply it to the validation dataset - had to change the type ####
+#### S. Modelling FLOOR with Building_pred and best_wap #### 
+#### $ KNN ####
 summary(training_clean_v4)
 
 set.seed(123)
@@ -898,7 +898,7 @@ svm_Radial_floor_prediction
 accuracy(svm_Radial_floor_prediction, validation_v4.1$FLOOR) 
 ### C:  0.8782687
 
-#### $ SVM Linear ####
+#### $ SVM Linear - BEST ####
 set.seed(123)
 svm_Linear_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
                           data = training_floor_train, 
@@ -915,4 +915,125 @@ svm_Linear_floor_prediction
 accuracy(svm_Linear_floor_prediction, validation_v4.1$FLOOR) 
 ### C:  0.896303
 
+#### $ SVM Linear3 ####
+set.seed(123)
+svm_Linear3_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
+                          data = training_floor_train, 
+                          method = "svmLinear3", 
+                          trControl = Cross_validation, 
+                          preProcess= c("center","scale"))
 
+svm_Linear3_floor ##  0.8948354  0.863278
+saveRDS(svm_Linear3_floor,file = "svm_Linear3_floor.RDS")
+svm_Linear3_floor_prediction <- predict(svm_Linear3_floor,validation_v4.1) 
+svm_Linear3_floor_prediction
+
+## Accuracy 
+accuracy(svm_Linear3_floor_prediction, validation_v4.1$FLOOR) 
+### C:  0.8854824
+
+#### $ RF ####
+set.seed(123)
+rf_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
+                           data = training_floor_train, 
+                           method = "rf", ntree=5 ,
+                           tuneLength = 10, 
+                           trControl = Cross_validation)
+
+rf_floor 
+##  mtry  Accuracy   Kappa 
+##  26   0.8692724  0.8299252
+## 100   0.8908901  0.8582214
+
+saveRDS(rf_floor,file = "rf_floor.RDS")
+rf_floor_prediction <- predict(rf_floor,validation_v4.1) 
+rf_floor_prediction
+
+## Accuracy 
+accuracy(rf_floor_prediction, validation_v4.1$FLOOR) 
+### C:  0.864743
+
+
+
+#### T. Modelling FLOOR with Building_pred, best_wap and waps ####
+#### $ SVM Linear - with best_wap #### 
+set.seed(123)
+svm_Linear_floor_2ND <- train(FLOOR ~ . - LATITUDE - LONGITUDE,
+                          data = training_floor_train, 
+                          method = "svmLinear", 
+                          trControl = Cross_validation, 
+                          preProcess= c("center","scale"))
+
+svm_Linear_floor_2ND ## 0.9740959  0.9663433
+saveRDS(svm_Linear_floor_2ND,file = "svm_Linear_floor_2ND_WITH_WAPPS.RDS")
+svm_Linear_floor_2ND_prediction <- predict(svm_Linear_floor_2ND,validation_v4.1) 
+svm_Linear_floor_2ND_prediction
+
+## Accuracy 
+accuracy(svm_Linear_floor_2ND_prediction, validation_v4.1$FLOOR) 
+### C: 0.9116321
+
+#### $ SVM Linear - without best_wap #### 
+set.seed(123)
+svm_Linear_floor_2ND_nobest <- train(FLOOR ~ . - LATITUDE - LONGITUDE - Best_wap,
+                              data = training_floor_train, 
+                              method = "svmLinear", 
+                              trControl = Cross_validation, 
+                              preProcess= c("center","scale"))
+
+svm_Linear_floor_2ND_nobest ## 0.9740959  0.9663433
+saveRDS(svm_Linear_floor_2ND_nobest,file = "svm_Linear_floor_2ND_WITH_WAPPS_NO_BEST_WAP.RDS")
+svm_Linear_floor_2ND_NOBEST_prediction <- predict(svm_Linear_floor_2ND_nobest,validation_v4.1) 
+svm_Linear_floor_2ND_NOBEST_prediction
+
+## Accuracy 
+accuracy(svm_Linear_floor_2ND_NOBEST_prediction, validation_v4.1$FLOOR) 
+### C: 0.8881876
+
+#### $ Knn - with best_wap ####
+set.seed(123)
+Knn_floor_2ND <- train(FLOOR ~ . - LATITUDE - LONGITUDE,
+                              data = training_floor_train, 
+                              method = "knn", 
+                              trControl = Cross_validation, 
+                              preProcess= c("center","scale"))
+Knn_floor_2ND ## k - 5 ; accuracy - 0.9138771 ; kappa - 0.8880335
+saveRDS(Knn_floor_2ND,file = "knn_2ND_WITH_WAPPS.RDS")
+knn_floor_2ND_prediction <- predict(Knn_floor_2ND,validation_v4.1) 
+knn_floor_2ND_prediction
+
+## Accuracy 
+accuracy(knn_floor_2ND_prediction, validation_v4.1$FLOOR) 
+### C: 0.8530207
+
+#### $ SVM Radial - with best_wap ####
+set.seed(123)
+svm_Radial_floor_2ND <- train(FLOOR ~ . - LATITUDE - LONGITUDE,
+                                           data = training_floor_train, 
+                                           method = "svmRadial", 
+                                           trControl = Cross_validation, 
+                                           preProcess= c("center","scale"))
+
+svm_Radial_floor_2ND ## C - 1; accuracy -  0.9457899 ; kappa - 0.9295476
+saveRDS(svm_Radial_floor_2ND,file = "svm_Radial_floor_2ND_WAPPS.RDS")
+svm_Radial_floor_2ND_prediction <- predict(svm_Radial_floor_2ND,validation_v4.1) 
+svm_Radial_floor_2ND_prediction
+
+## Accuracy 
+accuracy(svm_Radial_floor_2ND_prediction, validation_v4.1$FLOOR) 
+### C: 0.8449053
+
+#### U. Modelling FLOOR with waps only ####
+set.seed(123)
+svm_Linear_floor_3rD <- train(FLOOR ~ . - LATITUDE - LONGITUDE - BUILDINGID - Best_wap,
+                              data = training_floor_train, 
+                              method = "svmLinear", 
+                              trControl = Cross_validation, 
+                              preProcess= c("center","scale"))
+
+svm_Linear_floor_3rD ## Accuracy - 0.9744378  Kappa - 0.9667969
+saveRDS(svm_Linear_floor_3rD,file="svm_Linear_floor_3rD_ONLY_WAPS.RDS")
+
+svm_Linear_floor_3rD_prediction <- predict(svm_Linear_floor_3rD, validation_v4.1)
+svm_Linear_floor_3rD_prediction
+accuracy(svm_Linear_floor_3rD_prediction,validation_v4.1$FLOOR) ## 0.8881876
