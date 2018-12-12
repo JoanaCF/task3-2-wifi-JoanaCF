@@ -678,6 +678,7 @@ svm_building_radial <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR,
                       trControl = Cross_validation)
 
 svm_building_radial
+saveRDS(svm_building_radial,file = "svm_radial_building.RDS")
 # cost  Loss  Accuracy   Kappa // with all variables
 #  0.25  0.9989708  0.9983979
 
@@ -698,8 +699,8 @@ rf_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = train
                      method = "rf", ntree=5 ,
                      tuneLength = 10, 
                      trControl = Cross_validation)
-rf_building
 
+saveRDS(rf_building,file = "rf_building.RDS")
 ### C:
 # mtry  Accuracy   Kappa
 #   2   0.9697573  0.9525263
@@ -720,4 +721,86 @@ nzv<-nearZeroVar(training_clean_v2[,1:312], saveMetrics= TRUE)
 nzv[nzv$nzv,][1:10,]
 str(nzv)
 nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero 
+
+
+#### N. Create a new column with max waps ####
+summary(training_clean_v3[,1:312])
+str(training_clean_v3)
+apply(training_clean_v3[,1:312],1,function(x)(max(x)))
+names(apply(training_clean_v3[,1:312],1,function(x)(max(x))))
+apply(training_clean_v3[,1:312],1,function(x)colnames(max(x)))
+apply(training_clean_v3[,1:312],1,function(x)colnames(max(x)))
+apply(training_clean_v3[,1:312],1,function(x)(which.max(x)))
+apply(training_clean_v3[,1:312],1,function(x)names(which.max(x)))
+
+training_clean_v4<-training_clean_v3
+summary(training_clean_v4)
+training_clean_v4$Best_wap <- apply(training_clean_v3[,1:312],1,function(x)names(which.max(x)))
+training_clean_v4$Best_wap <-as.factor(training_clean_v4$Best_wap)
+summmary(training_clean_v4$Best_wap)
+hchart(training_clean_v4$Best_wap)
+str(training_clean_v4$Best_wap) ## 222 levels
+str(training_clean_v4) ## 19402 obs. of  317 variables:
+
+
+#### O. Modelling - with only best_wap variable ####
+set.seed(123)
+training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10)
+class(training_sample_2nd) ### list 
+
+## Training model (sample)
+training_c_part_train_2nd <- training_clean_v4[training_sample_2nd$Resample1,]
+str(training_c_part_train_2nd) ## 1942 obs. of  317 variables:
+
+## Check the distribution of training and general dataset
+hchart(training_c_part_train_2nd$FLOOR)
+hchart(training_clean_v4$FLOOR)
+prop.table(table(training_c_part_train_2nd$FLOOR))
+prop.table(table(training_clean_v4$FLOOR))
+### C: quite balanced distribution of floor
+
+ggplot(data=training_clean_v4, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+ggplot(data=training_c_part_train_2nd, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+### C: quite balanced distributions of location (latitude and longitude)
+
+prop.table(table(training_c_part_train_2nd$BUILDINGID))
+prop.table(table(training_clean_v4$BUILDINGID))
+### C: quite balanced distribution of building ID 
+
+hchart(training_c_part_train_2nd$Best_wap)
+hchart(training_clean_v4$Best_wap)
+### C:difficult to check 
+prop.table(table(training_c_part_train_2nd$Best_wap))
+prop.table(table(training_clean_v4$Best_wap))
+### C:difficult to compare
+
+## Prepare validation dataset 
+validation_v4 <- validation_v3
+str(validation_v4) ## 1111 obs. of  316 variables:
+validation_v4$Best_wap <- apply(validation_v4[,1:312],1,function(x)names(which.max(x)))
+str(validation_v4) ##1111 obs. of  317 variables:
+validation_v4$Best_wap <- as.factor(validation_v4$Best_wap)
+str(validation_v4$Best_wap) ###  Factor w/ 175 levels
+
+#### $ Models - KNN ####
+set.seed(123)
+summary(training_c_part_train_2nd$Best_wap)
+
+Knn_building_2nd <- train(BUILDINGID ~ Best_wap, 
+                      data = training_c_part_train_2nd, 
+                      method = "knn", 
+                      trControl = Cross_validation)
+
+Knn_building_2nd ##  K= //  accuracy -  kappa -  // 
+saveRDS(Knn_building_2nd,file = "KNN_BUILDING_bestwap.RDS")
+KNN_building_prediction_2nd <- predict(Knn_building_2nd,validation_v4) 
+KNN_building_prediction_2nd
+
+## Accuracy 
+accuracy(KNN_building_prediction_2nd, validation_v4$BUILDINGID)
+### C: 
+table(KNN_building_prediction_2nd) 
+### C:  TI   TD   TC :
+table(validation_v4$BUILDINGID)
+### C:  TI   TD   TC : 
 
