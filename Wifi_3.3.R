@@ -898,3 +898,21 @@ svm_Radial_floor_prediction
 accuracy(svm_Radial_floor_prediction, validation_v4.1$FLOOR) 
 ### C:  0.8782687
 
+#### $ SVM Linear ####
+set.seed(123)
+svm_Linear_floor <- train(FLOOR ~ Best_wap + BUILDINGID, 
+                          data = training_floor_train, 
+                          method = "svmLinear", 
+                          trControl = Cross_validation, 
+                          preProcess= c("center","scale"))
+
+svm_Linear_floor ##  0.8948354  0.863278
+saveRDS(svm_Linear_floor,file = "svm_Linear_floor.RDS")
+svm_Linear_floor_prediction <- predict(svm_Linear_floor,validation_v4.1) 
+svm_Linear_floor_prediction
+
+## Accuracy 
+accuracy(svm_Linear_floor_prediction, validation_v4.1$FLOOR) 
+### C:  0.896303
+
+
