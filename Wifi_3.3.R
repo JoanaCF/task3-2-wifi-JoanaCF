@@ -594,8 +594,9 @@ str(training_c_part_train) ## 1942 obs. of  316 variables
 ## Cross validation 
 Cross_validation <- trainControl(
   method = "repeatedcv",
-  number = 10,
-  repeats = 3)
+  number = 3,
+  repeats = 3,
+  allowParallel = TRUE)
 
 ## Check the distribution of training and testing sets 
 hchart(training_c_part_train$FLOOR)
@@ -667,6 +668,8 @@ saveRDS(svm_building,file = "svm_linear_building.RDS")
 
 svm_building_prediction <- predict(svm_building,validation_v3)
 svm_building_prediction 
+svm_building_prediction_train <- predict(svm_building,training_clean_v3)
+
 library(Metrics)
 accuracy(svm_building_prediction, validation_v3$BUILDINGID)
 ### C: 1
@@ -786,16 +789,64 @@ validation_v4.1<-validation_v4.1 %>% filter(Best_wap!="WAP323" )
 validation_v4.1 ## 1,109 x 317
 
 
-#### $ Models - KNN ####
+#### $ Models - Knn - It didn't work ####
+#### $ Models - svmLinear ####
 set.seed(123)
 
-Knn_building_2nd <- train(BUILDINGID ~ Best_wap, 
+svm_linear_building_2nd <- train(BUILDINGID ~ Best_wap, 
                       data = training_clean_v4, 
                       method = "svmLinear", 
                       trControl = Cross_validation)
-Knn_building_2nd
-saveRDS(Knn_building_2nd,file = "Knn_building_2nd_best_wap.RDS")
-svm_building_prediction_2nd <- predict(Knn_building_2nd,validation_v4.1)
+svm_linear_building_2nd
+### Accuracy - 0.9970449   // Kappa - 0.9953929
+saveRDS(svm_linear_building_2nd,file = "svm_linear_building_2nd_best_wap.RDS")
+svm_building_prediction_2nd <- predict(svm_linear_building_2nd,validation_v4.1)
 svm_building_prediction_2nd
 accuracy(svm_building_prediction_2nd, validation_v4.1$BUILDINGID)
 ### C: accuracy = 1
+
+#### $ Models - svmRadial - I had to stop it ####
+set.seed(123)
+svm_radial_building_2nd <- train(BUILDINGID ~ Best_wap, 
+                          data = training_clean_v4, 
+                          method = "svmRadial", 
+                          trControl = Cross_validation)
+
+#### $ Models - rf - I had to stop it  ####
+set.seed(123)
+rf_building_2nd <- train(BUILDINGID ~ Best_wap, 
+                                 data = training_clean_v4, 
+                                 method = "rf", 
+                                 trControl = Cross_validation)
+
+
+
+#### P. Building prediction added to datasets
+validation_v3$BuildingID_Pred <- svm_building_prediction
+summary(validation_v3)
+
+training_clean_v3$BuildingID_Pred <- svm_building_prediction_train
+summary(training_clean_v3)
+
+#### Q. Split the dataset by building ####
+
+# TI 
+training_TI_v3<-training_clean_v3 %>% filter(BUILDINGID=="TI")
+# summary(training_TI_v3)
+
+validation_TI_v3<-validation_v3 %>% filter(BUILDINGID=="TI")
+# summary(validation_TI_v3)
+
+# TD
+training_TD_v3<-training_clean_v3 %>% filter(BUILDINGID=="TD")
+# summary(training_TD_v3)
+
+validation_TD_v3<-validation_v3 %>% filter(BUILDINGID=="TD")
+# summary(validation_TD_v3)
+
+# TC
+training_TC_v3<-training_clean_v3 %>% filter(BUILDINGID=="TC")
+summary(training_TC_v3)
+
+validation_TC_v3<-validation_v3 %>% filter(BUILDINGID=="TC")
+# summary(validation_TC_v3)
