@@ -652,28 +652,26 @@ table(validation_v3$BUILDINGID)
 ### C:  TI   TD   TC : 536 307 268 
 ### C: TC is quite well predicted only 3 people were not predicted accurately
 
-
-##### Redo from here onwards ####
-
-
-
-#### $ Models - SVM Linear 3####
-svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmLinear3", preProcess=c("scale", "center"), 
+#### $ Models - SVM Linear 3 ####
+svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+                      data = training_c_part_train, 
+                      method = "svmLinear3", 
                       trControl = Cross_validation)
 
 svm_building
-# cost  Loss  Accuracy   Kappa // with all variables
-# 0.25  L1    0.9993291  0.9989440
+# cost  Loss  Accuracy   Kappa 
+# 0.25  L1    0.9993127  0.9989282
+# ~3 min 
+saveRDS(svm_building,file = "svm_linear_building.RDS")
 
-svm_building_prediction <- predict(svm_building,training_c_part_test)
+svm_building_prediction <- predict(svm_building,validation_v3)
 svm_building_prediction 
 library(Metrics)
-accuracy(svm_building_prediction, training_c_part_test$BUILDINGID)
-### C: 0.9996643
-table(svm_building_prediction)
-### C:  TI   TD   TC : 4723 4637 8514 
-table(training_c_part_test$BUILDINGID)
-### C:  TI   TD   TC : 4723 4643 8508 
+accuracy(svm_building_prediction, validation_v3$BUILDINGID)
+### C: 1
+
+##### Redo from here onwards ####
+
 
 #### $ Models - SVM Radial ####
 svm_building_radial <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, method = "svmRadial", preProcess=c("scale", "center"), 
