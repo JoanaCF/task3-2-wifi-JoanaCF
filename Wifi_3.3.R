@@ -726,11 +726,6 @@ nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero
 #### N. Create a new column with max waps ####
 summary(training_clean_v3[,1:312])
 str(training_clean_v3)
-apply(training_clean_v3[,1:312],1,function(x)(max(x)))
-names(apply(training_clean_v3[,1:312],1,function(x)(max(x))))
-apply(training_clean_v3[,1:312],1,function(x)colnames(max(x)))
-apply(training_clean_v3[,1:312],1,function(x)colnames(max(x)))
-apply(training_clean_v3[,1:312],1,function(x)(which.max(x)))
 apply(training_clean_v3[,1:312],1,function(x)names(which.max(x)))
 
 training_clean_v4<-training_clean_v3
@@ -741,66 +736,66 @@ summmary(training_clean_v4$Best_wap)
 hchart(training_clean_v4$Best_wap)
 str(training_clean_v4$Best_wap) ## 222 levels
 str(training_clean_v4) ## 19402 obs. of  317 variables:
-
+View(training_clean_v4$Best_wap)
 
 #### O. Modelling - with only best_wap variable ####
 set.seed(123)
-training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10)
+training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10, list = FALSE)
 class(training_sample_2nd) ### list 
 
 ## Training model (sample)
-training_c_part_train_2nd <- training_clean_v4[training_sample_2nd$Resample1,]
+training_c_part_train_2nd <- training_clean_v4[training_sample_2nd,]
 str(training_c_part_train_2nd) ## 1942 obs. of  317 variables:
 
 ## Check the distribution of training and general dataset
-hchart(training_c_part_train_2nd$FLOOR)
-hchart(training_clean_v4$FLOOR)
-prop.table(table(training_c_part_train_2nd$FLOOR))
-prop.table(table(training_clean_v4$FLOOR))
+# hchart(training_c_part_train_2nd$FLOOR)
+# hchart(training_clean_v4$FLOOR)
+# prop.table(table(training_c_part_train_2nd$FLOOR))
+# prop.table(table(training_clean_v4$FLOOR))
 ### C: quite balanced distribution of floor
 
-ggplot(data=training_clean_v4, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
-ggplot(data=training_c_part_train_2nd, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_clean_v4, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_c_part_train_2nd, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 ### C: quite balanced distributions of location (latitude and longitude)
 
-prop.table(table(training_c_part_train_2nd$BUILDINGID))
-prop.table(table(training_clean_v4$BUILDINGID))
+# prop.table(table(training_c_part_train_2nd$BUILDINGID))
+# prop.table(table(training_clean_v4$BUILDINGID))
 ### C: quite balanced distribution of building ID 
 
-hchart(training_c_part_train_2nd$Best_wap)
-hchart(training_clean_v4$Best_wap)
+# hchart(training_c_part_train_2nd$Best_wap)
+# hchart(training_clean_v4$Best_wap)
 ### C:difficult to check 
-prop.table(table(training_c_part_train_2nd$Best_wap))
-prop.table(table(training_clean_v4$Best_wap))
+# prop.table(table(training_c_part_train_2nd$Best_wap))
+# prop.table(table(training_clean_v4$Best_wap))
 ### C:difficult to compare
 
 ## Prepare validation dataset 
 validation_v4 <- validation_v3
-str(validation_v4) ## 1111 obs. of  316 variables:
+# str(validation_v4) ## 1111 obs. of  316 variables:
 validation_v4$Best_wap <- apply(validation_v4[,1:312],1,function(x)names(which.max(x)))
-str(validation_v4) ##1111 obs. of  317 variables:
+# str(validation_v4) ##1111 obs. of  317 variables:
 validation_v4$Best_wap <- as.factor(validation_v4$Best_wap)
-str(validation_v4$Best_wap) ###  Factor w/ 175 levels
+# str(validation_v4$Best_wap) ###  Factor w/ 175 levels
+
+#### Error in model.frame.default(Terms, newdata, na.action = na.action, xlev = object$xlevels) : factor Best_wap has new levels WAP268, WAP323
+## In the validation dataset, best_wap has 2 levels that dont exist in the training dataset. 
+
+validation_v4 ## 1,111 x 317
+validation_v4.1<-validation_v4 %>% filter(Best_wap!="WAP268" )
+validation_v4.1<-validation_v4.1 %>% filter(Best_wap!="WAP323" )
+validation_v4.1 ## 1,109 x 317
+
 
 #### $ Models - KNN ####
 set.seed(123)
-summary(training_c_part_train_2nd$Best_wap)
 
 Knn_building_2nd <- train(BUILDINGID ~ Best_wap, 
-                      data = training_c_part_train_2nd, 
-                      method = "knn", 
+                      data = training_clean_v4, 
+                      method = "svmLinear", 
                       trControl = Cross_validation)
-
-Knn_building_2nd ##  K= //  accuracy -  kappa -  // 
-saveRDS(Knn_building_2nd,file = "KNN_BUILDING_bestwap.RDS")
-KNN_building_prediction_2nd <- predict(Knn_building_2nd,validation_v4) 
-KNN_building_prediction_2nd
-
-## Accuracy 
-accuracy(KNN_building_prediction_2nd, validation_v4$BUILDINGID)
-### C: 
-table(KNN_building_prediction_2nd) 
-### C:  TI   TD   TC :
-table(validation_v4$BUILDINGID)
-### C:  TI   TD   TC : 
-
+Knn_building_2nd
+saveRDS(Knn_building_2nd,file = "Knn_building_2nd_best_wap.RDS")
+svm_building_prediction_2nd <- predict(Knn_building_2nd,validation_v4.1)
+svm_building_prediction_2nd
+accuracy(svm_building_prediction_2nd, validation_v4.1$BUILDINGID)
+### C: accuracy = 1
