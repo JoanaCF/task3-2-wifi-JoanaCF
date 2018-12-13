@@ -1069,35 +1069,66 @@ svm_Radial_floor_2ND__nobest_prediction
 accuracy(svm_Radial_floor_2ND__nobest_prediction, validation_v4.1$FLOORINDEX) 
 ### C: 0.8683499
 
-#### $ RF - with best_wap ####
+#### $ RF - with best_wap - BEST ####
 set.seed(123)
 rf_floor_2ND <- train(FLOORINDEX ~ . - LATITUDE - LONGITUDE,
                               data = training_floor_train, 
-                              method = "rf",ntree= ,
+                              method = "rf",ntree= 5,
                               tuneLength = 10, 
                               trControl = Cross_validation)
 
-rf_floor_2ND ## C - 1; accuracy -    ; kappa - 
+rf_floor_2ND 
+# mtry  Accuracy   Kappa  
+##  2   0.4175704  0.3531609
+## 12   0.8960583  0.8864647
+## 83   0.9967455  0.9964488
 saveRDS(rf_floor_2ND,file = "rf_floor_2ND_WAPS.RDS")
-rf_floor_2ND_prediction <- predict(rf_floor_2ND_2ND,validation_v4.1) 
+rf_floor_2ND_prediction <- predict(rf_floor_2ND,validation_v4.1) 
 rf_floor_2ND_prediction
 
 ## Accuracy 
 accuracy(rf_floor_2ND_prediction, validation_v4.1$FLOORINDEX) 
-### C:  
+### C:  1 
 
-
-#### U. Modelling FLOOR with waps only ####
+#### $ RF - without best_wap - BEST ####
 set.seed(123)
-svm_Linear_floor_3rD <- train(FLOOR ~ . - LATITUDE - LONGITUDE - BUILDINGID - Best_wap,
+rf_floor_2ND_nobest <- train(FLOORINDEX ~ . - LATITUDE - LONGITUDE - Best_wap,
+                      data = training_floor_train, 
+                      method = "rf",ntree= 5,
+                      tuneLength = 10, 
+                      trControl = Cross_validation)
+
+rf_floor_2ND_nobest 
+# mtry  Accuracy   Kappa  
+##  2   0.5992941  0.5595545
+## 37   0.9952055  0.9947686
+##212   1.0000000  1.0000000
+saveRDS(rf_floor_2ND_nobest ,file = "rf_floor_2ND_WAPS_NO_BEST_WAP.RDS")
+rf_floor_2ND__nobest_prediction <- predict(rf_floor_2ND_nobest,validation_v4.1) 
+rf_floor_2ND__nobest_prediction
+
+## Accuracy 
+accuracy(rf_floor_2ND__nobest_prediction, validation_v4.1$FLOORINDEX) 
+### C:  1 
+
+#### V. Modelling FLOOR with waps only ####
+#### $ RF ####
+set.seed(123)
+rf_floor_3rD <- train(FLOORINDEX ~ . - LATITUDE - LONGITUDE - BUILDINGID - Best_wap,
                               data = training_floor_train, 
-                              method = "svmLinear", 
-                              trControl = Cross_validation, 
-                              preProcess= c("center","scale"))
+                              method = "rf", ntree= 5,
+                              tuneLength = 10, 
+                              trControl = Cross_validation)
 
-svm_Linear_floor_3rD ## Accuracy - 0.9744378  Kappa - 0.9667969
-saveRDS(svm_Linear_floor_3rD,file="svm_Linear_floor_3rD_ONLY_WAPS.RDS")
+rf_floor_3rD
+##   mtry  Accuracy   Kappa    
+##    2   0.6827964  0.5847937
+##   37   0.9986293  0.9982189
+##  180   1.0000000  1.0000000
 
-svm_Linear_floor_3rD_prediction <- predict(svm_Linear_floor_3rD, validation_v4.1)
-svm_Linear_floor_3rD_prediction
-accuracy(svm_Linear_floor_3rD_prediction,validation_v4.1$FLOOR) ## 0.8881876
+saveRDS(rf_floor_3rD,file="rf_floor_3rD_ONLY_WAPS.RDS")
+
+rf_floor_3rD_prediction <- predict(rf_floor_3rD, validation_v4.1)
+rf_floor_3rD_prediction
+accuracy(rf_floor_3rD_prediction,validation_v4.1$FLOORINDEX) ## 0.9693417
+
