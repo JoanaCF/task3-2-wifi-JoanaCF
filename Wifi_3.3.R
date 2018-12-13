@@ -1186,7 +1186,7 @@ postResample(knn_longitude_2nd_prediction,validation_v6$LONGITUDE)
 #       RMSE   Rsquared        MAE 
 # 24.5473852  0.9596937  9.3489582  
 mean(abs((knn_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001239296
-#### $ svmLinear                ####
+#### $ svmLinear          ####
 svmLinear_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
                             data = training_longitude_train,
                             method = "svmLinear", 
@@ -1201,7 +1201,7 @@ postResample(svmLinear_longitude_2nd_prediction,validation_v6$LONGITUDE)
 # 19.6791421  0.9735491 14.9667785
 mean(abs((svmLinear_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
 
-#### $ svmRadial                ####
+#### $ svmRadial          ####
 svmRadial_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
                                   data = training_longitude_train,
                                   method = "svmRadial", 
@@ -1217,4 +1217,18 @@ postResample(svmRadial_longitude_2nd_prediction,validation_v6$LONGITUDE)
 mean(abs((svmRadial_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
 
 
+#### $ svmKernel          ####
+library(e1071)
 
+svmKernel_longitude <-svm(LONGITUDE ~. - FLOOR - LATITUDE, 
+                        data = training_longitude_train, 
+                          kernel="linear", 
+                          preProcess=c("center", "scale"),  
+                          trControl = Cross_validation)
+
+svmKernel_longitude
+saveRDS(svmKernel_longitude, file="svmKernel_longitude.RDS")
+svmKernel_longitude_prediction <- predict(svmKernel_longitude,validation_v6)
+svmKernel_longitude_prediction
+postResample(svmKernel_longitude_prediction,validation_v6$LONGITUDE)
+mean(abs((svmKernel_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.003479293
