@@ -1026,7 +1026,7 @@ svmRadial_floor_waps_build_prediction
 accuracy(svmRadial_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8559856
 
 
-######### Z. Modelling FLOORINDEX // WAPS #####
+######### V. Modelling FLOORINDEX // WAPS #####
 #### $ SVM Linear ####
 
 set.seed(123)
@@ -1047,22 +1047,40 @@ svmLinear_floor_waps_prediction
 ## Accuracy 
 accuracy(svmLinear_floor_waps_prediction, validation_v5$FLOORINDEX) ### 0.8865887
 
-######### AA. Modelling LONGITUDE // WAPS X BUILDINGID X FLOOR #####
+######### W. Modelling LONGITUDE  #####
 install.packages("modelr")
 library(modelr)
-#### AA.1 New training model / create sample ####
+#### X.1 Include FLOORINDEX prediction in dataset - training_clean_v6 ####
+training_clean_v6 <- training_clean_v5
+training_clean_v6$FLOORINDEX_pred <- predict(svmLinear_floor_waps_build,training_clean_v6) 
+
+validation_v6 <- validation_v5
+validation_v6$FLOORINDEX_pred <- svmLinear_floor_waps_build_prediction
+# summary(validation_v6$FLOORINDEX)
+# summary(validation_v6$FLOORINDEX_pred)
+# summary(training_clean_v6)
+
+#### X.2 Create a training dataset / create a sample ####
 set.seed(123)
-training_sample_longitude<-createDataPartition(y=training_clean_v5$LONGITUDE, times = 1,  p=0.10)
+training_sample_longitude<-createDataPartition(y=training_clean_v6$LONGITUDE, times = 1,  p=0.10)
 class(training_sample_longitude) ### list 
 
-## Training model (sample)
-training_longitude_train <- training_clean_v5[training_sample_longitude$Resample1,]
+training_longitude_train <- training_clean_v6[training_sample_longitude$Resample1,]
 str(training_longitude_train) ## 1942 obs. of  317 variables
 summary(training_longitude_train)
 
-#### AA.2 Models // Floorindex + buildingid ####
+## Check representativity
+prop.table(table(training_clean_v6$FLOORINDEX))
+prop.table(table(training_longitude_train$FLOORINDEX))
+
+# ggplot(data=training_clean_v5, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_longitude_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+
+#### X.3 Models // Floorindex_pred X BUILDINGID ####
 #### $ RF ####
-rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+summary(training_longitude_train)
+
+rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX_pred + BUILDINGID,
                           data = training_longitude_train,
                             ntree=5,
                            tuneLength = 10, 
@@ -1070,16 +1088,15 @@ rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX + BUILDINGID,
 
 rf_longitude
 saveRDS(rf_longitude, file="rf_longitude.RDS")
-rf_longitude_prediction <- predict(rf_longitude,validation_v5)
+rf_longitude_prediction <- predict(rf_longitude,validation_v6)
 rf_longitude_prediction
 
-RMSE(rf_longitude_prediction,validation_v5$LONGITUDE) ## 33.11204
-MAE(rf_longitude_prediction,validation_v5$LONGITUDE) ## 26.25446
-R2(rf_longitude_prediction,validation_v5$LONGITUDE) ## 0.9243218
-MRE_longitude_rf = mean(abs((rf_longitude_prediction-validation_v5$LONGITUDE)/validation_v5$LONGITUDE))
-MRE_longitude_rf ## 0.003498429
-
-postResample(rf_longitude_prediction,validation_v5$LONGITUDE)
+RMSE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 34.0241
+MAE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 27.02368
+R2(rf_longitude_prediction,validation_v6$LONGITUDE) ## 0.9199266
+MRE_longitude_rf = mean(abs((rf_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
+MRE_longitude_rf ## 0.003599369
+postResample(rf_longitude_prediction,validation_v6$LONGITUDE)
 
 #### $ Linear model  
 lm(LONGITUDE ~ FLOORINDEX + BUILDINGID, data = training_longitude_train)
@@ -1096,5 +1113,5 @@ lm(LONGITUDE ~ FLOORINDEX + BUILDINGID, data = training_longitude_train)
 
 
 
-
+ 
 
