@@ -628,7 +628,7 @@ validation_v3<-validation_clean[,-c(317:321)]
 ## change 100 by -105 
 validation_v3[validation_v3==100] <- -105
 
-#### L. Modelling BUILDING ID - with all waps ####
+#########  L. Modelling BUILDING ID // WAPS ####
 library("Metrics")
 #### $ Models - KNN ####
 colnames(training_c_part_train)
@@ -653,7 +653,7 @@ table(validation_v3$BUILDINGID)
 ### C:  TI   TD   TC : 536 307 268 
 ### C: TC is quite well predicted only 3 people were not predicted accurately
 
-#### $ Models - SVM Linear 3 ####
+#### $ Models - SVM Linear 3 - BEST ####
 
 set.seed (123)
 svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
@@ -742,7 +742,7 @@ str(training_clean_v4$Best_wap) ## 222 levels
 str(training_clean_v4) ## 19402 obs. of  317 variables:
 View(training_clean_v4$Best_wap)
 
-#### O. Modelling BUILDING ID -  with only best_wap variable ####
+#########  O. Modelling BUILDING ID // Best_wap ####
 set.seed(123)
 training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10, list = FALSE)
 class(training_sample_2nd) ### list 
@@ -875,8 +875,8 @@ str(training_floor_train) ## 1942 obs. of  316 variables
 summary(training_floor_train)
 
 
-############ IGNORE THIS PART - validation with minus 2 observations ############
-#### T. Modelling FLOOR with Building_pred X best_wap #### 
+############################### IGNORE THIS PART - BEG ############
+######### T. Modelling FLOOR // Building_pred X best_wap #### 
 #### $ KNN ####
 summary(training_clean_v4)
 
@@ -970,7 +970,7 @@ accuracy(rf_floor_prediction, validation_v4.1$FLOORINDEX)
 
 
 
-#### U. Modelling FLOOR with Building_pred X best_wap X waps ####
+######### U. Modelling FLOOR // Building_pred X best_wap X waps ####
 #### $ SVM Linear - with best_wap #### 
 set.seed(123)
 svm_Linear_floor_2ND <- train(FLOORINDEX ~ . - LATITUDE - LONGITUDE,
@@ -1113,7 +1113,7 @@ rf_floor_2ND__nobest_prediction
 accuracy(rf_floor_2ND__nobest_prediction, validation_v4.1$FLOORINDEX) 
 ### C:  1 
 
-#### V. Modelling FLOOR with waps only ####
+######### V. Modelling FLOOR // WAPS only ####
 #### $ RF ####
 set.seed(123)
 rf_floor_3rD <- train(FLOORINDEX ~ . - LATITUDE - LONGITUDE - BUILDINGID - Best_wap,
@@ -1134,8 +1134,10 @@ rf_floor_3rD_prediction <- predict(rf_floor_3rD, validation_v4.1)
 rf_floor_3rD_prediction
 accuracy(rf_floor_3rD_prediction,validation_v4.1$FLOORINDEX) ## 0.9693417
 
-##### TESTS #### 
 
+############################### IGNORE THIS PART - END ############
+##### TESTS ####
+##### New training model / sample ####
 ### took the Best_wap column 
 training_clean_v5 <- training_clean_v4
 training_clean_v5$Best_wap <- NULL
@@ -1144,7 +1146,6 @@ summary(training_clean_v5)
 validation_v5 <- validation_v4
 validation_v5$Best_wap <- NULL
 summary(validation_v5)
-
 
 set.seed(123)
 training_sample_floor_test<-createDataPartition(y=training_clean_v5$FLOORINDEX, times = 1,  p=0.10)
@@ -1158,10 +1159,10 @@ summary(training_floor_train_test)
 #### RF - Only with building #### 
 set.seed(123)
 rf_floor_test <- train(FLOORINDEX ~ BUILDINGID, 
-                  data = training_floor_train_test, 
-                  method = "rf", ntree=5,
-                  tuneLength = 10, 
-                  trControl = Cross_validation)
+                       data = training_floor_train_test, 
+                       method = "rf", ntree=5,
+                       tuneLength = 10, 
+                       trControl = Cross_validation)
 
 rf_floor_test
 ## Accuracy   Kappa 
@@ -1180,10 +1181,10 @@ set.seed(123)
 colnames(training_floor_train_test)
 
 rf_floor_test_2 <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                       data = training_floor_train_test, 
-                       method = "rf", ntree=5,
-                       tuneLength = 10, 
-                       trControl = Cross_validation)
+                         data = training_floor_train_test, 
+                         method = "rf", ntree=5,
+                         tuneLength = 10, 
+                         trControl = Cross_validation)
 
 rf_floor_test_2
 
@@ -1196,8 +1197,7 @@ accuracy(rf_floor_prediction_test_2, validation_v5$FLOORINDEX) ### 1
 
 str(validationData) ### 1111 obs. of  529 variables:
 str(validation_v5) ### 1111 obs. of  317 variables:
-############ redoing again ############
-#### Modelling FLOORINDEX // BUILDING and WAPS ####
+######### Modelling FLOORINDEX // BUILDING X WAPS ####
 #### $ RF ####
 colnames(training_floor_train_test)
 training_sample_floor_test
@@ -1224,7 +1224,6 @@ rf_floor_waps_build_prediction
 accuracy(rf_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8289829
 
 #### $ KNN ####
-
 set.seed(123)
 knn_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
                          data = training_floor_train_test, 
@@ -1241,3 +1240,87 @@ knn_floor_waps_build_prediction
 
 ## Accuracy 
 accuracy(knn_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8118812
+
+#### $ SVM Linear - BEST ####
+set.seed(123)
+svmLinear_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                              data = training_floor_train_test, 
+                              method = "svmLinear", 
+                              trControl = Cross_validation,
+                              preProcess= c("center","scale"))
+
+svmLinear_floor_waps_build
+### acc=  0.9820158  kappa = 0.9803753
+
+
+saveRDS(svmLinear_floor_waps_build,file = "svmLinear_floor_waps_build.RDS")
+svmLinear_floor_waps_build_prediction <- predict(svmLinear_floor_waps_build,validation_v5) 
+svmLinear_floor_waps_build_prediction
+
+## Accuracy 
+accuracy(svmLinear_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8910891
+
+#### $ SVM Linear 3 ####
+set.seed(123)
+svmLinear3_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                                    data = training_floor_train_test, 
+                                    method = "svmLinear3", 
+                                    trControl = Cross_validation,
+                                    preProcess= c("center","scale"))
+
+svmLinear3_floor_waps_build
+### acc=  0.9820158  kappa = 0.9803753
+
+
+saveRDS(svmLinear3_floor_waps_build,file = "svmLinear3_floor_waps_build.RDS")
+svmLinear3_floor_waps_build_prediction <- predict(svmLinear3_floor_waps_build,validation_v5) 
+svmLinear3_floor_waps_build_prediction
+
+## Accuracy 
+accuracy(svmLinear3_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8559856
+
+#### $ SVM Radial ####
+set.seed(123)
+svmRadial_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                                     data = training_floor_train_test, 
+                                     method = "svmRadial", 
+                                     trControl = Cross_validation,
+                                     preProcess= c("center","scale"))
+
+svmRadial_floor_waps_build
+### acc=  0.9820158  kappa = 0.9803753
+
+
+saveRDS(svmRadial_floor_waps_build,file = "svmRadial_floor_waps_build.RDS")
+svmRadial_floor_waps_build_prediction <- predict(svmRadial_floor_waps_build,validation_v5) 
+svmRadial_floor_waps_build_prediction
+
+## Accuracy 
+accuracy(svmRadial_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8559856
+
+
+######### Modelling FLOORINDEX // WAPS #####
+#### $ SVM Linear ####
+
+set.seed(123)
+svmLinear_floor_waps <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
+                                    data = training_floor_train_test, 
+                                    method = "svmLinear", 
+                                    trControl = Cross_validation,
+                                    preProcess= c("center","scale"))
+
+svmLinear_floor_waps
+### acc=  0.9813305   kappa = 0.9796268
+
+
+saveRDS(svmLinear_floor_waps,file = "svmLinear_floor_waps.RDS")
+svmLinear_floor_waps_prediction <- predict(svmLinear_floor_waps,validation_v5) 
+svmLinear_floor_waps_prediction
+
+## Accuracy 
+accuracy(svmLinear_floor_waps_prediction, validation_v5$FLOORINDEX) ### 0.8865887
+
+
+
+######### Modelling LONGITUDE // WAPS X BUILDINGID X FLOOR #####
+
