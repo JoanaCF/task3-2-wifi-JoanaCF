@@ -1027,7 +1027,7 @@ accuracy(svmRadial_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.
 
 
 ######### V. Modelling FLOORINDEX // WAPS #####
-#### $ SVM Linear ####
+#### $ SVM Linear       ####
 
 set.seed(123)
 svmLinear_floor_waps <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
@@ -1050,14 +1050,13 @@ accuracy(svmLinear_floor_waps_prediction, validation_v5$FLOORINDEX) ### 0.886588
 ######### W. Modelling LONGITUDE  #####
 install.packages("modelr")
 library(modelr)
-#### X.1 Include FLOORINDEX prediction in dataset - training_clean_v6 ####
+#### X.1 Include FLOORINDEX prediction in dataset - validation_6 and training_v6####
 training_clean_v6 <- training_clean_v5
-training_clean_v6$FLOORINDEX_pred <- predict(svmLinear_floor_waps_build,training_clean_v6) 
 
 validation_v6 <- validation_v5
 validation_v6$FLOORINDEX_pred <- svmLinear_floor_waps_build_prediction
-# summary(validation_v6$FLOORINDEX)
-# summary(validation_v6$FLOORINDEX_pred)
+summary(validation_v6$FLOORINDEX)
+summary(validation_v6$FLOORINDEX_pred)
 # summary(training_clean_v6)
 
 #### X.2 Create a training dataset / create a sample ####
@@ -1073,14 +1072,14 @@ summary(training_longitude_train)
 prop.table(table(training_clean_v6$FLOORINDEX))
 prop.table(table(training_longitude_train$FLOORINDEX))
 
-# ggplot(data=training_clean_v5, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_clean_v6, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 # ggplot(data=training_longitude_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 
 #### X.3 Models // Floorindex_pred X BUILDINGID ####
-#### $ RF ####
+#### $ RF                 ####
 summary(training_longitude_train)
 
-rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX_pred + BUILDINGID,
+rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX + BUILDINGID,
                           data = training_longitude_train,
                             ntree=5,
                            tuneLength = 10, 
@@ -1091,27 +1090,131 @@ saveRDS(rf_longitude, file="rf_longitude.RDS")
 rf_longitude_prediction <- predict(rf_longitude,validation_v6)
 rf_longitude_prediction
 
-RMSE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 34.0241
-MAE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 27.02368
-R2(rf_longitude_prediction,validation_v6$LONGITUDE) ## 0.9199266
+RMSE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 32.9751929 
+MAE(rf_longitude_prediction,validation_v6$LONGITUDE) ## 26.2355416 
+R2(rf_longitude_prediction,validation_v6$LONGITUDE) ## 0.924777
 MRE_longitude_rf = mean(abs((rf_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
-MRE_longitude_rf ## 0.003599369
-postResample(rf_longitude_prediction,validation_v6$LONGITUDE)
+MRE_longitude_rf ## 0.003495682
 
-#### $ Linear model  
-lm(LONGITUDE ~ FLOORINDEX + BUILDINGID, data = training_longitude_train)
+#### $ Knn                ####  
+knn_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+                          data = training_longitude_train,
+                        method = "knn", 
+                        preProcess=c("center", "scale"),  
+                        trControl = Cross_validation )
+knn_longitude
+# k   RMSE      Rsquared   MAE  
+# 5    34.45145  0.9222221  27.73622
+saveRDS(knn_longitude, file="knn_longitude.RDS")
+knn_longitude_prediction <- predict(knn_longitude,validation_v6)
+knn_longitude_prediction
+postResample(knn_longitude_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#   32.7991571  0.9256617 25.8634797
+MRE_longitude_knn = mean(abs((knn_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
+MRE_longitude_knn ## 0.003446395
+
+#### $ Svm Linear         ####
+
+svmLINEAR_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+                        data = training_longitude_train,
+                        method = "svmLinear", 
+                        preProcess=c("center", "scale"),  
+                        trControl = Cross_validation )
+svmLINEAR_longitude
+#       RMSE   Rsquared       MAE 
+#    34.95863  0.9202532  27.79006
+
+saveRDS(svmLINEAR_longitude, file="svmLINEAR_longitude.RDS")
+svmLINEAR_longitude_prediction <- predict(svmLINEAR_longitude,validation_v6)
+svmLINEAR_longitude_prediction
+postResample(svmLINEAR_longitude_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#   33.4390355  0.9228215 26.0821289  
+MRE_longitude_svm = mean(abs((svmLINEAR_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
+MRE_longitude_svm ##  0.003475293
+
+#### $ Svm Radial         ####
+svmRadial_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+                              data = training_longitude_train,
+                              method = "svmRadial", 
+                              preProcess=c("center", "scale"),  
+                              trControl = Cross_validation )
+svmRadial_longitude
+#    C      RMSE   Rsquared       MAE 
+# 0.25  34.97852  0.9200301  27.86506
+
+saveRDS(svmRadial_longitude, file="svmRadial_longitude.RDS")
+svmRadial_longitude_prediction <- predict(svmRadial_longitude,validation_v6)
+svmRadial_longitude_prediction
+postResample(svmRadial_longitude_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#   33.4376121  0.9227082 26.0561536 
+MRE_longitude_svmRADIAL = mean(abs((svmRadial_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
+MRE_longitude_svmRADIAL ## 0.003471759
+
+#### X.3 Models // Floorindex_pred X BUILDINGID X WAPS ####
+summary(training_longitude_train)
+
+#### $ RF                 ####
+rf_longitude_2nd<-randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE,
+                                          data = training_longitude_train,
+                                          ntree=5,
+                                          tuneLength = 10, 
+                                          trControl = Cross_validation )
+rf_longitude_2nd
+saveRDS(rf_longitude_2nd, file="rf_longitude_2nd.RDS")
+rf_longitude_2nd_prediction <- predict(rf_longitude_2nd,validation_v6)
+rf_longitude_2nd_prediction
+postResample(rf_longitude_2nd_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 12.6939970  0.9888462  8.7888255  
+
+mean(abs((rf_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001170946
+
+#### $ Knn                ####
+knn_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+                        data = training_longitude_train,
+                        method = "knn", 
+                        preProcess=c("center", "scale"),  
+                        trControl = Cross_validation )
+knn_longitude_2nd #  k 5  RMSE  9.712448    Rsquared  0.9938443 MAE   6.238773
+saveRDS(knn_longitude_2nd, file="knn_longitude_2nd.RDS")
+knn_longitude_2nd_prediction <- predict(knn_longitude_2nd,validation_v6)
+knn_longitude_2nd_prediction
+postResample(knn_longitude_2nd_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 24.5473852  0.9596937  9.3489582  
+mean(abs((knn_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001239296
+#### $ svmLinear                ####
+svmLinear_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+                            data = training_longitude_train,
+                            method = "svmLinear", 
+                            preProcess=c("center", "scale"),  
+                            trControl = Cross_validation)
+svmLinear_longitude_2nd # RMSE - 16.49151      Rsquared -0.9821991    MAE -  12.21286    
+saveRDS(svmLinear_longitude_2nd , file="svmLinear_longitude_2nd .RDS")
+svmLinear_longitude_2nd_prediction <- predict(svmLinear_longitude_2nd,validation_v6)
+svmLinear_longitude_2nd_prediction
+postResample(svmLinear_longitude_2nd_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 19.6791421  0.9735491 14.9667785
+mean(abs((svmLinear_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
+
+#### $ svmRadial                ####
+svmRadial_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+                                  data = training_longitude_train,
+                                  method = "svmRadial", 
+                                  preProcess=c("center", "scale"),  
+                                  trControl = Cross_validation)
+svmRadial_longitude_2nd # RMSE - 97.08788      Rsquared -0.7169238    MAE -  73.15231
+saveRDS(svmRadial_longitude_2nd , file="svmRadial_longitude_2nd .RDS")
+svmRadial_longitude_2nd_prediction <- predict(svmRadial_longitude_2nd,validation_v6)
+svmRadial_longitude_2nd_prediction
+postResample(svmRadial_longitude_2nd_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 104.7087719   0.7149327  86.5343634 
+mean(abs((svmRadial_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
 
 
-#### $ KNN
-
-### $ SVM 
-
-
-
-
-
-
-
-
- 
 
