@@ -220,7 +220,7 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 ####longitude and latitude, with floor, building and relativeposition 
 
 ## training 
-#ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~BUILDINGID)
+ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~BUILDINGID)
 ### C: buildings are isolated 
 
 #ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_grid(~FLOOR)
@@ -654,6 +654,7 @@ table(validation_v3$BUILDINGID)
 ### C: TC is quite well predicted only 3 people were not predicted accurately
 
 #### $ Models - SVM Linear 3 ####
+
 set.seed (123)
 svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
                       data = training_c_part_train, 
@@ -874,6 +875,7 @@ str(training_floor_train) ## 1942 obs. of  316 variables
 summary(training_floor_train)
 
 
+############ IGNORE THIS PART - validation with minus 2 observations ############
 #### T. Modelling FLOOR with Building_pred X best_wap #### 
 #### $ KNN ####
 summary(training_clean_v4)
@@ -1132,3 +1134,110 @@ rf_floor_3rD_prediction <- predict(rf_floor_3rD, validation_v4.1)
 rf_floor_3rD_prediction
 accuracy(rf_floor_3rD_prediction,validation_v4.1$FLOORINDEX) ## 0.9693417
 
+##### TESTS #### 
+
+### took the Best_wap column 
+training_clean_v5 <- training_clean_v4
+training_clean_v5$Best_wap <- NULL
+summary(training_clean_v5)
+
+validation_v5 <- validation_v4
+validation_v5$Best_wap <- NULL
+summary(validation_v5)
+
+
+set.seed(123)
+training_sample_floor_test<-createDataPartition(y=training_clean_v5$FLOORINDEX, times = 1,  p=0.10)
+class(training_sample_floor_test) ### list 
+
+## Training model ( sample )
+training_floor_train_test <- training_clean_v5[training_sample_floor_test$Resample1,]
+str(training_floor_train_test) ## 1942 obs. of  316 variables
+summary(training_floor_train_test)
+
+#### RF - Only with building #### 
+set.seed(123)
+rf_floor_test <- train(FLOORINDEX ~ BUILDINGID, 
+                  data = training_floor_train_test, 
+                  method = "rf", ntree=5,
+                  tuneLength = 10, 
+                  trControl = Cross_validation)
+
+rf_floor_test
+## Accuracy   Kappa 
+## 0.2742691  0.1951056
+
+saveRDS(rf_floor_test,file = "rf_floor_test.RDS")
+rf_floor_prediction_test <- predict(rf_floor_test,validation_v5) 
+rf_floor_prediction_test
+
+## Accuracy 
+accuracy(rf_floor_prediction_test, validation_v5$FLOORINDEX) 
+### C:   0.3132313
+
+#### RF - Only with building and waps #### 
+set.seed(123)
+colnames(training_floor_train_test)
+
+rf_floor_test_2 <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                       data = training_floor_train_test, 
+                       method = "rf", ntree=5,
+                       tuneLength = 10, 
+                       trControl = Cross_validation)
+
+rf_floor_test_2
+
+saveRDS(rf_floor_test_2,file = "rf_floor_test_2.RDS")
+rf_floor_prediction_test_2 <- predict(rf_floor_test_2,validation_v5) 
+rf_floor_prediction_test_2
+
+## Accuracy 
+accuracy(rf_floor_prediction_test_2, validation_v5$FLOORINDEX) ### 1
+
+str(validationData) ### 1111 obs. of  529 variables:
+str(validation_v5) ### 1111 obs. of  317 variables:
+############ redoing again ############
+#### Modelling FLOORINDEX // BUILDING and WAPS ####
+#### $ RF ####
+colnames(training_floor_train_test)
+training_sample_floor_test
+
+set.seed(123)
+rf_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                         data = training_floor_train_test, 
+                         method = "rf", ntree=5,
+                         tuneLength = 10, 
+                         trControl = Cross_validation)
+
+rf_floor_waps_build
+###  mtry  Accuracy   Kappa    
+###     2   0.5718354  0.5292448
+###    36   0.9138932  0.9059795
+###   106   0.9210782  0.9138311
+
+
+saveRDS(rf_floor_waps_build,file = "rf_floor_waps_build.RDS")
+rf_floor_waps_build_prediction<- predict(rf_floor_waps_build,validation_v5) 
+rf_floor_waps_build_prediction
+
+## Accuracy 
+accuracy(rf_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8289829
+
+#### $ KNN ####
+
+set.seed(123)
+knn_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+                         data = training_floor_train_test, 
+                         method = "knn", 
+                         trControl = Cross_validation,
+                         preProcess= c("center","scale"))
+
+knn_floor_waps_build 
+### K= 5  acc= 0.9297925  kappa= 0.9233677
+
+saveRDS(knn_floor_waps_build,file = "knn_floor_waps_build .RDS")
+knn_floor_waps_build_prediction <- predict(knn_floor_waps_build,validation_v5) 
+knn_floor_waps_build_prediction
+
+## Accuracy 
+accuracy(knn_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8118812
