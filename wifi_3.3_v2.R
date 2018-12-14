@@ -553,7 +553,7 @@ validation_v3<-validation_clean[,-c(317:321)]
 ## change 100 by -105 
 validation_v3[validation_v3==100] <- -105
 
- ########## distinct from script 3.1 ############
+ ########## Distinct from script 3.1 ############
 #### M. Position points ####
 # str(training_clean_v3) ## 19402 obs. of  317 variables:
 training_clean_v3$Unique_position <- paste(training_clean_v3$LONGITUDE, training_clean_v3$LATITUDE, training_clean_v3$FLOOR)
@@ -564,3 +564,14 @@ validation_v3$Unique_position <- paste(validation_v3$LONGITUDE, validation_v3$LA
 validation_v3$Unique_position <- factor(validation_v3$Unique_position)
 str(validation_v3$Unique_position) # 1061 levels
 
+
+#### N. Duplicated rows ####
+sum(duplicated(training_clean_v3)) ## 715 duplicated
+sum(duplicated(validation_v3)) ## 0 duplicated
+duplicated_rows<-training_clean_v3[duplicated(training_clean_v3),]
+
+dim(training_clean_v3) ## 19402   318
+dim(training_clean_v3[duplicated(training_clean_v3),]) ## 715 318
+dim(training_clean_v3[!duplicated(training_clean_v3),]) ## 18687   318
+training_clean_v7 <- training_clean_v3[!duplicated(training_clean_v3),]
+dim(training_clean_v7)
