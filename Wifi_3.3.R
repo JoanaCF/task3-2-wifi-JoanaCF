@@ -230,7 +230,7 @@ ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wra
 #ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~RELATIVEPOSITION)
 
 
-#ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
 
 
 # ggplot_coordinates + geom_point(size=4, aes(color = ifelse(LONGITUDE < -7580, "TI",
@@ -246,7 +246,7 @@ ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wra
 
 
 ## validation
-# ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
 
 ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
                                                          ifelse(FLOOR ==1, "1",
@@ -1301,17 +1301,6 @@ postResample(knn_latitude_2nd_prediction,validation_v6$LATITUDE)
 mean(abs((knn_latitude_2nd_prediction-validation_v6$LATITUDE)/validation_v6$LATITUDE)) ## 1.581959e-06
 
 
-#### $ RF                        ####
-rf_latitude_2nd<-randomForest::randomForest( LATITUDE ~. -FLOOR - LONGITUDE,
-                                         data = training_longitude_train,
-                                         ntree=5,
-                                         tuneLength = 10, 
-                                         trControl = Cross_validation )
-rf_latitude_2nd
-saveRDS(rf_latitude_2nd, file="rf_latitude_2nd.RDS")
-rf_latitude_2nd_prediction <- predict(rf_latitude_2nd,validation_v6)
-postResample(rf_latitude_2nd_prediction,validation_v6$LATITUDE)
-#       RMSE   Rsquared        MAE 
-#  12.559314   0.968274   8.212697
-######### X. Modelling LONGITUDE BASED ON LATITUDE X FLOORINDEX X BUILDINGID X WAPS ####
-
+save("training_clean_v2",file="test.Rdata")
+load("test.Rdata")
+training_clean_v2
