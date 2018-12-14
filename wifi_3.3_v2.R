@@ -537,7 +537,8 @@ registerDoMC(cores = 4)
 
 # library(doSNOW) ### Error: object 'doSNOW' not found
 
-#### K. Prepare validation dataset ####
+#### K. (missing Creating a sample / data partition)
+#### L. Prepare validation dataset ####
 ## Make the same amendments, such as delete the same variables and changing 100 to -105 
 
 ## delete columns
@@ -551,3 +552,15 @@ validation_v3<-validation_clean[,-c(317:321)]
 
 ## change 100 by -105 
 validation_v3[validation_v3==100] <- -105
+
+ ########## distinct from script 3.1 ############
+#### M. Position points ####
+# str(training_clean_v3) ## 19402 obs. of  317 variables:
+training_clean_v3$Unique_position <- paste(training_clean_v3$LONGITUDE, training_clean_v3$LATITUDE, training_clean_v3$FLOOR)
+training_clean_v3$Unique_position <- factor(training_clean_v3$Unique_position)
+str(training_clean_v3$Unique_position) ### only 933 levels
+
+validation_v3$Unique_position <- paste(validation_v3$LONGITUDE, validation_v3$LATITUDE, validation_v3$FLOOR)
+validation_v3$Unique_position <- factor(validation_v3$Unique_position)
+str(validation_v3$Unique_position) # 1061 levels
+
