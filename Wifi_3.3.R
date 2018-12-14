@@ -538,9 +538,8 @@ registerDoMC(cores = 4)
 # library(doSNOW) ### Error: object 'doSNOW' not found
 
 
-#### I. Creating a sample / data partition ####
+#### K. Creating a sample / data partition ####
 library(caret)
-
 set.seed(123)
 training_sample<-createDataPartition(y=training_clean_v3$BUILDINGID, times = 1,  p=0.10)
 class(training_sample) ### list 
@@ -557,21 +556,21 @@ Cross_validation <- trainControl(
   allowParallel = TRUE)
 
 ## Check the distribution of training and testing sets 
-hchart(training_c_part_train$FLOOR)
-hchart(training_clean_v3$FLOOR)
-prop.table(table(training_c_part_train$FLOOR))
-prop.table(table(training_clean_v3$FLOOR))
+# hchart(training_c_part_train$FLOOR)
+# hchart(training_clean_v3$FLOOR)
+# prop.table(table(training_c_part_train$FLOOR))
+# prop.table(table(training_clean_v3$FLOOR))
 ### C: quite balanced distribution of floor
 
-ggplot(data=training_clean_v3, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
-ggplot(data=training_c_part_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_clean_v3, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+# ggplot(data=training_c_part_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 ### C: quite balanced distributions of location (latitude and longitude)
 
-prop.table(table(training_c_part_train$BUILDINGID))
-prop.table(table(training_clean_v3$BUILDINGID))
+# prop.table(table(training_c_part_train$BUILDINGID))
+# prop.table(table(training_clean_v3$BUILDINGID))
 ### C: quite balanced distribution of building ID 
 
-#### J. Prepare validation dataset ####
+#### L. Prepare validation dataset ####
 ## Make the same amendments, such as delete the same variables and changing 100 to -105 
 
 ## delete columns
@@ -586,19 +585,20 @@ validation_v3<-validation_clean[,-c(317:321)]
 ## change 100 by -105 
 validation_v3[validation_v3==100] <- -105
 
-#########  L. Modelling BUILDING ID // WAPS ####
+#########  M. Modelling BUILDING ID // WAPS ####
 library("Metrics")
 #### $ KNN                       ####
 colnames(training_c_part_train)
 is.factor(training_c_part_train$BUILDINGID)
 
-set.seed(123)
-Knn_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
-                      data = training_c_part_train, 
-                      method = "knn", 
-                      trControl = Cross_validation)
+# set.seed(123)
+# Knn_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+   #                    data = training_c_part_train, 
+     #                 method = "knn", 
+      #                trControl = Cross_validation)
 Knn_building ##  K=5 //  accuracy - 0.9953652 kappa - 0.9927903 // 1 min 
-saveRDS(Knn_building,file = "KNN_BUILDING.RDS")
+#save(Knn_building,file = "KNN_BUILDING.Rdata")
+load("KNN_BUILDING.Rdata")
 KNN_building_prediction <- predict(Knn_building,validation_v3) 
 KNN_building_prediction
 
@@ -612,19 +612,19 @@ table(validation_v3$BUILDINGID)
 ### C: TC is quite well predicted only 3 people were not predicted accurately
 
 #### $ SVMLinear3 - BEST         ####
-
-set.seed (123)
-svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
-                      data = training_c_part_train, 
-                      method = "svmLinear3", 
-                      trControl = Cross_validation)
+# set.seed (123)
+# svm_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+ #                     data = training_c_part_train, 
+  #                    method = "svmLinear3", 
+   #                   trControl = Cross_validation)
 
 svm_building
 # cost  Loss  Accuracy   Kappa 
 # 0.25  L1    0.9993127  0.9989282
 # ~3 min 
-saveRDS(svm_building,file = "svm_linear_building.RDS")
-
+# saveRDS(svm_building,file = "svm_linear_building.RDS")
+# save(svm_building,file = "svm_linear_building.Rdata")
+load("svm_linear_building.Rdata")
 svm_building_prediction <- predict(svm_building,validation_v3)
 svm_building_prediction 
 svm_building_prediction_train <- predict(svm_building,training_clean_v3)
@@ -634,13 +634,14 @@ accuracy(svm_building_prediction, validation_v3$BUILDINGID)
 ### C: 1
 
 #### $ SVMRadial                 ####
-svm_building_radial <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
-                      data = training_c_part_train, 
-                      method = "svmRadial",
-                      trControl = Cross_validation)
+# svm_building_radial <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+ #                     data = training_c_part_train, 
+  #                    method = "svmRadial",
+   #                   trControl = Cross_validation)
 
 svm_building_radial
-saveRDS(svm_building_radial,file = "svm_radial_building.RDS")
+# save(svm_building_radial,file = "svm_radial_building.Rdata")
+load("svm_linear_building.Rdata")
 # cost  Loss  Accuracy   Kappa // with all variables
 #  0.25  0.9989708  0.9983979
 
@@ -656,14 +657,13 @@ table(validation_v3$BUILDINGID)
 ### Again, TC has been perfectly predicted, and only two observations' were wrongly predicted. 
 
 #### $ RF                        ####
-set.seed(123)
-rf_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, 
-                     method = "rf", ntree=5 ,
-                     tuneLength = 10, 
-                     trControl = Cross_validation)
-
-saveRDS(rf_building,file = "rf_building.RDS")
-### C:
+# set.seed(123)
+# rf_building <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, data = training_c_part_train, 
+  #                   method = "rf", ntree=5 ,
+   #                  tuneLength = 10, 
+    #                 trControl = Cross_validation)
+save(rf_building,file = "rf_building.Rdata")
+load("rf_building.Rdata")
 # mtry  Accuracy   Kappa
 #   2   0.9697573  0.9525263
 #  36   0.9948523  0.9919686
@@ -676,12 +676,6 @@ table(rf_building_prediction)
 table(validation_v3$BUILDINGID) 
 ### C:  TI   TD   TC : 536 307 268 
 ### C: worse prediction - not one single class predicted accurately. still TC is the best one and TD the worst. 
-
-#### M. Check variance again ####
-# nzv<-nearZeroVar(training_clean_v2[,1:312], saveMetrics= TRUE)
-# nzv[nzv$nzv,][1:10,]
-# str(nzv)
-# nzv %>% filter(nzv=="FALSE") ## none that has a variance close to zero 
 
 #### N. Create Best_wap Column  - training v4 ####
 # summary(training_clean_v3[,1:312])
@@ -701,9 +695,9 @@ training_clean_v4$Best_wap <-as.factor(training_clean_v4$Best_wap)
 #### O. Create Training / sample dataset - BUILDINGID ####
 set.seed(123)
 training_sample_2nd<-createDataPartition(y=training_clean_v4$BUILDINGID, times = 1,  p=0.10, list = FALSE)
-class(training_sample_2nd) ### list 
+# class(training_sample_2nd) ### list 
 training_c_part_train_2nd <- training_clean_v4[training_sample_2nd,]
-str(training_c_part_train_2nd) ## 1942 obs. of  317 variables:
+# str(training_c_part_train_2nd) ## 1942 obs. of  317 variables:
 
 ## Check the distribution of training and general dataset
 # hchart(training_c_part_train_2nd$FLOOR)
@@ -738,23 +732,21 @@ validation_v4$Best_wap <- as.factor(validation_v4$Best_wap)
 #### Error in model.frame.default(Terms, newdata, na.action = na.action, xlev = object$xlevels) : factor Best_wap has new levels WAP268, WAP323
 ## In the validation dataset, best_wap has 2 levels that dont exist in the training dataset. 
 
-validation_v4 ## 1,111 x 317
+# validation_v4 ## 1,111 x 317
 validation_v4.1<-validation_v4 %>% filter(Best_wap!="WAP268")
-validation_v4.1<-validation_v4.1 %>% filter(Best_wap!="WAP323")
-validation_v4.1 ## 1,109 x 317
-
+validation_v4.1<-validation_v4.1 %>% filter(Best_wap!="WAP323") ##  1,109 x 317
 
 #########  P. Modelling BUILDING ID // Best_wap ####
 #### $ svmLinear                 ####
-set.seed(123)
-
-svm_linear_building_2nd <- train(BUILDINGID ~ Best_wap, 
-                      data = training_clean_v4, 
-                      method = "svmLinear", 
-                      trControl = Cross_validation)
+# set.seed(123)
+# svm_linear_building_2nd <- train(BUILDINGID ~ Best_wap, 
+  #                    data = training_clean_v4, 
+   #                   method = "svmLinear", 
+    #                  trControl = Cross_validation)
 svm_linear_building_2nd
 ### Accuracy - 0.9970449   // Kappa - 0.9953929
-saveRDS(svm_linear_building_2nd,file = "svm_linear_building_2nd_best_wap.RDS")
+# save(svm_linear_building_2nd,file = "svm_linear_building_2nd_best_wap.Rdata")
+load("svm_linear_building_2nd_best_wap.Rdata")
 svm_building_prediction_2nd <- predict(svm_linear_building_2nd,validation_v4.1)
 svm_building_prediction_2nd
 accuracy(svm_building_prediction_2nd, validation_v4.1$BUILDINGID)
@@ -762,20 +754,20 @@ accuracy(svm_building_prediction_2nd, validation_v4.1$BUILDINGID)
 
 #### $ svmRadial                 ####
 # I had to stop it
-set.seed(123)
-svm_radial_building_2nd <- train(BUILDINGID ~ Best_wap, 
-                          data = training_clean_v4, 
-                          method = "svmRadial", 
-                          trControl = Cross_validation)
+# set.seed(123)
+# svm_radial_building_2nd <- train(BUILDINGID ~ Best_wap, 
+  #                        data = training_clean_v4, 
+   #                       method = "svmRadial", 
+    #                      trControl = Cross_validation)
 
 #### $ rf                        ####
 # I had to stop it
-set.seed(123)
-rf_building_2nd <- train(BUILDINGID ~ Best_wap, 
-                                 data = training_clean_v4, 
-                                 method = "rf", ntree=5 ,
-                         tuneLength = 10, 
-                                 trControl = Cross_validation)
+# set.seed(123)
+# rf_building_2nd <- train(BUILDINGID ~ Best_wap, 
+  #                               data = training_clean_v4, 
+   #                              method = "rf", ntree=5 ,
+    #                     tuneLength = 10, 
+     #                            trControl = Cross_validation)
 
 #### P. Building prediction added to datasets
 validation_v3$BuildingID_Pred <- svm_building_prediction
@@ -786,28 +778,27 @@ summary(training_clean_v3)
 
 #### P. Split the dataset by building ####
 # TI 
-training_TI_v3<-training_clean_v3 %>% filter(BUILDINGID=="TI")
+# training_TI_v3<-training_clean_v3 %>% filter(BUILDINGID=="TI")
 # summary(training_TI_v3)
-validation_TI_v3<-validation_v3 %>% filter(BUILDINGID=="TI")
+# validation_TI_v3<-validation_v3 %>% filter(BUILDINGID=="TI")
 # summary(validation_TI_v3)
 
 # TD
-training_TD_v3<-training_clean_v3 %>% filter(BUILDINGID=="TD")
+# training_TD_v3<-training_clean_v3 %>% filter(BUILDINGID=="TD")
 # summary(training_TD_v3)
-validation_TD_v3<-validation_v3 %>% filter(BUILDINGID=="TD")
+# validation_TD_v3<-validation_v3 %>% filter(BUILDINGID=="TD")
 # summary(validation_TD_v3)
 
 # TC
-training_TC_v3<-training_clean_v3 %>% filter(BUILDINGID=="TC")
-summary(training_TC_v3)
-validation_TC_v3<-validation_v3 %>% filter(BUILDINGID=="TC")
+# training_TC_v3<-training_clean_v3 %>% filter(BUILDINGID=="TC")
+# summary(training_TC_v3)
+# validation_TC_v3<-validation_v3 %>% filter(BUILDINGID=="TC")
 # summary(validation_TC_v3)
 
 #### Q. Create an index for floor - training_v4 validation_v4####
 training_clean_v4$FLOORINDEX <- paste0(training_clean_v4$BUILDINGID, training_clean_v4$FLOOR)
 validation_v4$FLOORINDEX <- paste0(validation_v4$BUILDINGID, validation_v4$FLOOR)
 validation_v4.1$FLOORINDEX <- paste0(validation_v4.1$BUILDINGID, validation_v4.1$FLOOR)
-
 
 training_clean_v4$FLOORINDEX <- as.factor(training_clean_v4$FLOORINDEX)
 validation_v4$FLOORINDEX <- as.factor(validation_v4$FLOORINDEX)
@@ -821,12 +812,9 @@ validation_v4.1$FLOORINDEX <- as.factor(validation_v4.1$FLOORINDEX)
 #### S. New dataset without Best_wap - training_v5 and validation v_5 ####
 training_clean_v5 <- training_clean_v4
 training_clean_v5$Best_wap <- NULL
-summary(training_clean_v5)
 
 validation_v5 <- validation_v4
 validation_v5$Best_wap <- NULL
-summary(validation_v5)
-str(validation_v5)
 
 #### T. New training / sample dataset - FLOORINDEX ####
 set.seed(123)
@@ -848,18 +836,18 @@ training_floor_train_test <- training_clean_v5[training_sample_floor_test$Resamp
 # ggplot(data=training_floor_train_test, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 
 #### $ RF                        ####
-set.seed(123)    
-rf_floor_test <- train(FLOORINDEX ~ BUILDINGID, 
-                       data = training_floor_train_test, 
-                       method = "rf", ntree=5,
-                       tuneLength = 10, 
-                       trControl = Cross_validation)
+# set.seed(123)    
+# rf_floor_test <- train(FLOORINDEX ~ BUILDINGID, 
+  #                     data = training_floor_train_test, 
+   #                    method = "rf", ntree=5,
+    #                   tuneLength = 10, 
+     #                  trControl = Cross_validation)
 
 rf_floor_test
 ## Accuracy   Kappa 
 ## 0.2742691  0.1951056
-
-saveRDS(rf_floor_test,file = "rf_floor_test.RDS")
+# save(rf_floor_test,file = "rf_floor_test.Rdata")
+load("rf_floor_test.Rdata")
 rf_floor_prediction_test <- predict(rf_floor_test,validation_v5) 
 rf_floor_prediction_test
 
@@ -868,16 +856,17 @@ accuracy(rf_floor_prediction_test, validation_v5$FLOORINDEX)
 ### C:   0.3132313
 
 #### $ SVM Linear                ####
-set.seed(123)
-svmLinear_floor_build <- train(FLOORINDEX ~ BUILDINGID, 
-                                     data = training_floor_train_test, 
-                                     method = "svmLinear", 
-                                     trControl = Cross_validation,
-                                     preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear_floor_build <- train(FLOORINDEX ~ BUILDINGID, 
+  #                                   data = training_floor_train_test, 
+   #                                  method = "svmLinear", 
+    #                                 trControl = Cross_validation,
+     #                                preProcess= c("center","scale"))
 
 svmLinear_floor_build
 ### acc= 0.2778641   kappa = 0.1982349
-saveRDS(svmLinear_floor_build,file = "svmLinear_floor_build.RDS")
+# save(svmLinear_floor_build,file = "svmLinear_floor_build.Rdata")
+load("svmLinear_floor_build.Rdata")
 svmLinear_floor_build_prediction <- predict(svmLinear_floor_build,validation_v5) 
 svmLinear_floor_build_prediction
 
@@ -886,24 +875,20 @@ accuracy(svmLinear_floor_build_prediction, validation_v5$FLOORINDEX) ### 0.31323
 
 ######### U. Modelling FLOORINDEX // BUILDING X WAPS ####
 #### $ RF                        ####
-colnames(training_floor_train_test)
-training_sample_floor_test
-
-set.seed(123)
-rf_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                         data = training_floor_train_test, 
-                         method = "rf", ntree=5,
-                         tuneLength = 10, 
-                         trControl = Cross_validation)
+# set.seed(123)
+# rf_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #                       data = training_floor_train_test, 
+   #                      method = "rf", ntree=5,
+    #                     tuneLength = 10, 
+     #                    trControl = Cross_validation)
 
 rf_floor_waps_build
 ###  mtry  Accuracy   Kappa    
 ###     2   0.5718354  0.5292448
 ###    36   0.9138932  0.9059795
 ###   106   0.9210782  0.9138311
-
-
-saveRDS(rf_floor_waps_build,file = "rf_floor_waps_build.RDS")
+# save(rf_floor_waps_build,file = "rf_floor_waps_build.Rdata")
+load("rf_floor_waps_build.Rdata")
 rf_floor_waps_build_prediction<- predict(rf_floor_waps_build,validation_v5) 
 rf_floor_waps_build_prediction
 
@@ -911,17 +896,18 @@ rf_floor_waps_build_prediction
 accuracy(rf_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8289829
 
 #### $ KNN                       ####
-set.seed(123)
-knn_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                         data = training_floor_train_test, 
-                         method = "knn", 
-                         trControl = Cross_validation,
-                         preProcess= c("center","scale"))
+# set.seed(123)
+# knn_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #                       data = training_floor_train_test, 
+   #                      method = "knn", 
+    #                     trControl = Cross_validation,
+     #                    preProcess= c("center","scale"))
 
 knn_floor_waps_build 
 ### K= 5  acc= 0.9297925  kappa= 0.9233677
 
-saveRDS(knn_floor_waps_build,file = "knn_floor_waps_build .RDS")
+# save(knn_floor_waps_build,file = "knn_floor_waps_build.Rdata")
+load("knn_floor_waps_build.Rdata")
 knn_floor_waps_build_prediction <- predict(knn_floor_waps_build,validation_v5) 
 knn_floor_waps_build_prediction
 
@@ -929,18 +915,18 @@ knn_floor_waps_build_prediction
 accuracy(knn_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8118812
 
 #### $ SVM Linear - BEST         ####
-set.seed(123)
-svmLinear_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                              data = training_floor_train_test, 
-                              method = "svmLinear", 
-                              trControl = Cross_validation,
-                              preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #                            data = training_floor_train_test, 
+   #                           method = "svmLinear", 
+    #                          trControl = Cross_validation,
+     #                         preProcess= c("center","scale"))
 
 svmLinear_floor_waps_build
 ### acc=  0.9820158  kappa = 0.9803753
 
-
-saveRDS(svmLinear_floor_waps_build,file = "svmLinear_floor_waps_build.RDS")
+# save(svmLinear_floor_waps_build,file = "svmLinear_floor_waps_build.Rdata")
+load("svmLinear_floor_waps_build.Rdata")
 svmLinear_floor_waps_build_prediction <- predict(svmLinear_floor_waps_build,validation_v5) 
 svmLinear_floor_waps_build_prediction
 
@@ -948,59 +934,60 @@ svmLinear_floor_waps_build_prediction
 accuracy(svmLinear_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8910891
 
 #### $ SVM Linear 3              ####
-set.seed(123)
-svmLinear3_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                                    data = training_floor_train_test, 
-                                    method = "svmLinear3", 
-                                    trControl = Cross_validation,
-                                    preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear3_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #                                  data = training_floor_train_test, 
+   #                                 method = "svmLinear3", 
+    #                                trControl = Cross_validation,
+     #                               preProcess= c("center","scale"))
 
 svmLinear3_floor_waps_build
 ### acc=  0.9820158  kappa = 0.9803753
 
+# save(svmLinear3_floor_waps_build,file = "svmLinear3_floor_waps_build.Rdata")
+load("svmLinear3_floor_waps_build.Rdata")
 
-saveRDS(svmLinear3_floor_waps_build,file = "svmLinear3_floor_waps_build.RDS")
 svmLinear3_floor_waps_build_prediction <- predict(svmLinear3_floor_waps_build,validation_v5) 
 svmLinear3_floor_waps_build_prediction
 
 ## Accuracy 
-accuracy(svmLinear3_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8559856
+accuracy(svmLinear3_floor_waps_build_prediction, validation_v5$FLOORINDEX) ## 0.8559856
 
 #### $ SVM Radial                ####
-set.seed(123)
-svmRadial_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-                                     data = training_floor_train_test, 
-                                     method = "svmRadial", 
-                                     trControl = Cross_validation,
-                                     preProcess= c("center","scale"))
+# set.seed(123)
+# svmRadial_floor_waps_build <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #                                   data = training_floor_train_test, 
+   #                                  method = "svmRadial", 
+    #                                 trControl = Cross_validation,
+     #                                preProcess= c("center","scale"))
 
 svmRadial_floor_waps_build
 ### acc=  0.9820158  kappa = 0.9803753
 
+# save(svmRadial_floor_waps_build,file = "svmRadial_floor_waps_build.Rdata")
+load("svmRadial_floor_waps_build.Rdata")
 
-saveRDS(svmRadial_floor_waps_build,file = "svmRadial_floor_waps_build.RDS")
 svmRadial_floor_waps_build_prediction <- predict(svmRadial_floor_waps_build,validation_v5) 
 svmRadial_floor_waps_build_prediction
 
 ## Accuracy 
 accuracy(svmRadial_floor_waps_build_prediction, validation_v5$FLOORINDEX) ### 0.8559856
 
-
 ######### V. Modelling FLOORINDEX // WAPS #####
 #### $ SVM Linear                ####
-
-set.seed(123)
-svmLinear_floor_waps <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
-                                    data = training_floor_train_test, 
-                                    method = "svmLinear", 
-                                    trControl = Cross_validation,
-                                    preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear_floor_waps <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
+  #                                  data = training_floor_train_test, 
+   #                                 method = "svmLinear", 
+    #                                trControl = Cross_validation,
+     #                               preProcess= c("center","scale"))
 
 svmLinear_floor_waps
 ### acc=  0.9813305   kappa = 0.9796268
 
+# save(svmLinear_floor_waps,file = "svmLinear_floor_waps.Rdata")
+load("svmLinear_floor_waps.Rdata")
 
-saveRDS(svmLinear_floor_waps,file = "svmLinear_floor_waps.RDS")
 svmLinear_floor_waps_prediction <- predict(svmLinear_floor_waps,validation_v5) 
 svmLinear_floor_waps_prediction
 
@@ -1011,40 +998,35 @@ accuracy(svmLinear_floor_waps_prediction, validation_v5$FLOORINDEX) ### 0.886588
 library(modelr)
 #### W.1 Include FLOORINDEX prediction in dataset - validation_6 and training_v6 ####
 training_clean_v6 <- training_clean_v5
-
 validation_v6 <- validation_v5
 validation_v6$FLOORINDEX <- svmLinear_floor_waps_build_prediction
-summary(validation_v6)
+# summary(validation_v6)
 # summary(training_clean_v6)
 
 #### W.2 Create a training dataset / create a sample ####
 set.seed(123)
 training_sample_longitude<-createDataPartition(y=training_clean_v6$LONGITUDE, times = 1,  p=0.10)
 class(training_sample_longitude) ### list 
-
-training_longitude_train <- training_clean_v6[training_sample_longitude$Resample1,]
-str(training_longitude_train) ## 1942 obs. of  317 variables
-summary(training_longitude_train)
+training_longitude_train <- training_clean_v6[training_sample_longitude$Resample1,] ## 1942 obs. of  317 variables
 
 ## Check representativity
-prop.table(table(training_clean_v6$FLOORINDEX))
-prop.table(table(training_longitude_train$FLOORINDEX))
+# prop.table(table(training_clean_v6$FLOORINDEX))
+# prop.table(table(training_longitude_train$FLOORINDEX))
 
 # ggplot(data=training_clean_v6, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 # ggplot(data=training_longitude_train, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 
 #### W.3 Models // FLOORINDEX X BUILDINGID ####
 #### $ RF                        ####
-summary(training_longitude_train)
-
-rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX + BUILDINGID,
-                          data = training_longitude_train,
-                            ntree=5,
-                           tuneLength = 10, 
-                           trControl = Cross_validation )
+# rf_longitude<-randomForest::randomForest( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+  #                        data = training_longitude_train,
+   #                         ntree=5,
+    #                       tuneLength = 10, 
+     #                      trControl = Cross_validation )
 
 rf_longitude
-saveRDS(rf_longitude, file="rf_longitude.RDS")
+# save(rf_longitude, file="rf_longitude.Rdata")
+load("rf_longitude.Rdata")
 rf_longitude_prediction <- predict(rf_longitude,validation_v6)
 rf_longitude_prediction
 
@@ -1055,15 +1037,18 @@ MRE_longitude_rf = mean(abs((rf_longitude_prediction-validation_v6$LONGITUDE)/va
 MRE_longitude_rf ## 0.003668978
 
 #### $ Knn                       ####  
-knn_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
-                          data = training_longitude_train,
-                        method = "knn", 
-                        preProcess=c("center", "scale"),  
-                        trControl = Cross_validation )
+# knn_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+  #                   data = training_longitude_train,
+   #                      method = "knn", 
+    #                     preProcess=c("center", "scale"),  
+#                        trControl = Cross_validation )
+
 knn_longitude
 # k   RMSE      Rsquared   MAE  
 # 5    34.43373  0.9224686  27.75944
-saveRDS(knn_longitude, file="knn_longitude.RDS")
+
+# save(knn_longitude, file="knn_longitude.Rdata")
+load("knn_longitude.Rdata")
 knn_longitude_prediction <- predict(knn_longitude,validation_v6)
 knn_longitude_prediction
 postResample(knn_longitude_prediction,validation_v6$LONGITUDE)
@@ -1073,16 +1058,17 @@ MRE_longitude_knn = mean(abs((knn_longitude_prediction-validation_v6$LONGITUDE)/
 MRE_longitude_knn ## 0.003624744
 
 #### $ Svm Linear                ####
-svmLINEAR_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
-                        data = training_longitude_train,
-                        method = "svmLinear", 
-                        preProcess=c("center", "scale"),  
-                        trControl = Cross_validation )
+# svmLINEAR_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+  #                      data = training_longitude_train,
+   #                     method = "svmLinear", 
+    #                    preProcess=c("center", "scale"),  
+     #                   trControl = Cross_validation )
 svmLINEAR_longitude
 #       RMSE   Rsquared       MAE 
 #    35.14357  0.9192896  28.02871
 
-saveRDS(svmLINEAR_longitude, file="svmLINEAR_longitude.RDS")
+# save(svmLINEAR_longitude, file="svmLINEAR_longitude.Rdata")
+load("svmLINEAR_longitude.Rdata")
 svmLINEAR_longitude_prediction <- predict(svmLINEAR_longitude,validation_v6)
 svmLINEAR_longitude_prediction
 postResample(svmLINEAR_longitude_prediction,validation_v6$LONGITUDE)
@@ -1092,35 +1078,36 @@ MRE_longitude_svm = mean(abs((svmLINEAR_longitude_prediction-validation_v6$LONGI
 MRE_longitude_svm ##  0.003597425
 
 #### $ Svm Radial                ####
-svmRadial_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
-                              data = training_longitude_train,
-                              method = "svmRadial", 
-                              preProcess=c("center", "scale"),  
-                              trControl = Cross_validation )
+# svmRadial_longitude <- train( LONGITUDE ~ FLOORINDEX + BUILDINGID,
+  #                            data = training_longitude_train,
+   #                           method = "svmRadial", 
+    #                          preProcess=c("center", "scale"),  
+     #                         trControl = Cross_validation )
 svmRadial_longitude
 #    C      RMSE   Rsquared       MAE 
 # 1.00  34.99023  0.9200238  27.76269
 
-saveRDS(svmRadial_longitude, file="svmRadial_longitude.RDS")
+# save(svmRadial_longitude, file="svmRadial_longitude.Rdata")
+load("svmRadial_longitude.Rdata")
+
 svmRadial_longitude_prediction <- predict(svmRadial_longitude,validation_v6)
 svmRadial_longitude_prediction
 postResample(svmRadial_longitude_prediction,validation_v6$LONGITUDE)
-#       RMSE   Rsquared        MAE 
+#        RMSE  Rsquared       MAE 
 #   34.661851  0.917007 27.137372  
 MRE_longitude_svmRADIAL = mean(abs((svmRadial_longitude_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE))
 MRE_longitude_svmRADIAL ## 0.003613777
 
 #### W.4 Models // FLOORINDEX X BUILDINGID X WAPS  ####
-summary(training_longitude_train)
-
 #### $ RF                        ####
-rf_longitude_2nd<-randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE,
-                                          data = training_longitude_train,
-                                          ntree=5,
-                                          tuneLength = 10, 
-                                          trControl = Cross_validation )
+# rf_longitude_2nd<-randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE,
+  #                                        data = training_longitude_train,
+   #                                       ntree=5,
+    #                                      tuneLength = 10, 
+     #                                     trControl = Cross_validation )
 rf_longitude_2nd
-saveRDS(rf_longitude_2nd, file="rf_longitude_2nd.RDS")
+# save(rf_longitude_2nd, file="rf_longitude_2nd.Rdata")
+load("rf_longitude_2nd.Rdata")
 rf_longitude_2nd_prediction <- predict(rf_longitude_2nd,validation_v6)
 rf_longitude_2nd_prediction
 postResample(rf_longitude_2nd_prediction,validation_v6$LONGITUDE)
@@ -1130,13 +1117,15 @@ postResample(rf_longitude_2nd_prediction,validation_v6$LONGITUDE)
 mean(abs((rf_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001235607
 
 #### $ Knn - BEST                ####
-knn_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
-                        data = training_longitude_train,
-                        method = "knn", 
-                        preProcess=c("center", "scale"),  
-                        trControl = Cross_validation )
+# knn_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+  #                      data = training_longitude_train,
+    #                    method = "knn", 
+     #                   preProcess=c("center", "scale"),  
+      #                  trControl = Cross_validation )
 knn_longitude_2nd #  k 5  RMSE  10.34798    Rsquared  0.9929923   MAE 6.392731
-saveRDS(knn_longitude_2nd, file="knn_longitude_2nd.RDS")
+
+# save(knn_longitude_2nd, file="knn_longitude_2nd.Rdata")
+load("rf_longitude_2nd.Rdata")
 knn_longitude_2nd_prediction <- predict(knn_longitude_2nd,validation_v6)
 knn_longitude_2nd_prediction
 postResample(knn_longitude_2nd_prediction,validation_v6$LONGITUDE)
@@ -1145,13 +1134,16 @@ postResample(knn_longitude_2nd_prediction,validation_v6$LONGITUDE)
 mean(abs((knn_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001239296
 
 #### $ svmLinear                 ####
-svmLinear_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
-                            data = training_longitude_train,
-                            method = "svmLinear", 
-                            preProcess=c("center", "scale"),  
-                            trControl = Cross_validation)
+# svmLinear_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+  #                          data = training_longitude_train,
+   #                         method = "svmLinear", 
+    #                        preProcess=c("center", "scale"),  
+     #                       trControl = Cross_validation)
+
 svmLinear_longitude_2nd # RMSE - 16.23015      Rsquared - 0.9828036    MAE -  12.04588  
-saveRDS(svmLinear_longitude_2nd , file="svmLinear_longitude_2nd .RDS")
+
+# save(svmLinear_longitude_2nd , file="svmLinear_longitude_2nd.Rdata")
+load("svmLinear_longitude_2nd.Rdata")
 svmLinear_longitude_2nd_prediction <- predict(svmLinear_longitude_2nd,validation_v6)
 svmLinear_longitude_2nd_prediction
 postResample(svmLinear_longitude_2nd_prediction,validation_v6$LONGITUDE)
@@ -1160,13 +1152,17 @@ postResample(svmLinear_longitude_2nd_prediction,validation_v6$LONGITUDE)
 mean(abs((svmLinear_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
 
 #### $ svmRadial                 ####
-svmRadial_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
-                                  data = training_longitude_train,
-                                  method = "svmRadial", 
-                                  preProcess=c("center", "scale"),  
-                                  trControl = Cross_validation)
+# svmRadial_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
+  #                                data = training_longitude_train,
+   #                               method = "svmRadial", 
+    #                              preProcess=c("center", "scale"),  
+     #                             trControl = Cross_validation)
+
 svmRadial_longitude_2nd # RMSE - 97.14524     Rsquared - 0.7156191    MAE - 73.19824
-saveRDS(svmRadial_longitude_2nd , file="svmRadial_longitude_2nd .RDS")
+
+# save(svmRadial_longitude_2nd , file="svmRadial_longitude_2nd.Rdata")
+load("svmRadial_longitude_2nd.Rdata")
+
 svmRadial_longitude_2nd_prediction <- predict(svmRadial_longitude_2nd,validation_v6)
 svmRadial_longitude_2nd_prediction
 postResample(svmRadial_longitude_2nd_prediction,validation_v6$LONGITUDE)
@@ -1174,18 +1170,17 @@ postResample(svmRadial_longitude_2nd_prediction,validation_v6$LONGITUDE)
 # 104.7234654   0.7165745  86.5529469
 mean(abs((svmRadial_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ### 0.001987534
 
-
 #### $ svmKernel                 ####
 library(e1071)
+# svmKernel_longitude <-svm(LONGITUDE ~. - FLOOR - LATITUDE, 
+  #                      data = training_longitude_train, 
+   #                       kernel="linear", 
+    #                      preProcess=c("center", "scale"),  
+     #                     trControl = Cross_validation)
 
-svmKernel_longitude <-svm(LONGITUDE ~. - FLOOR - LATITUDE, 
-                        data = training_longitude_train, 
-                          kernel="linear", 
-                          preProcess=c("center", "scale"),  
-                          trControl = Cross_validation)
+# save(svmKernel_longitude, file="svmKernel_longitude.Rdata")
+load("svmKernel_longitude.Rdata")
 
-svmKernel_longitude
-saveRDS(svmKernel_longitude, file="svmKernel_longitude.RDS")
 svmKernel_longitude_prediction <- predict(svmKernel_longitude,validation_v6)
 svmKernel_longitude_prediction
 postResample(svmKernel_longitude_prediction,validation_v6$LONGITUDE)
@@ -1201,7 +1196,9 @@ rf_longitude_WAPS<-randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE -
                                              tuneLength = 10, 
                                              trControl = Cross_validation )
 rf_longitude_WAPS 
-saveRDS(rf_longitude_WAPS , file="rf_longitude_WAPS .RDS")
+# save(rf_longitude_WAPS , file="rf_longitude_WAPS.Rdata")
+load("rf_longitude_WAPS.Rdata")
+
 rf_longitude_WAPS_prediction <- predict(rf_longitude_WAPS,validation_v6)
 postResample(rf_longitude_WAPS_prediction,validation_v6$LONGITUDE)
 #       RMSE   Rsquared        MAE 
@@ -1210,15 +1207,16 @@ mean(abs((rf_longitude_WAPS_prediction-validation_v6$LONGITUDE)/validation_v6$LO
 
 ######### Y. Modelling LATITUDE  ####
 #### W.1 Models // WAPS          ####
-summary(training_longitude_train)
 #### $ RF                        ####
 rf_latitude_waps<-randomForest::randomForest(LATITUDE ~. - FLOOR - LONGITUDE - FLOORINDEX - BUILDINGID,
                                               data = training_longitude_train,
                                               ntree=5,
                                               tuneLength = 10, 
                                               trControl = Cross_validation )
-rf_latitude_waps 
-saveRDS(rf_latitude_waps , file="rf_latitude_WAPS .RDS")
+
+save(rf_latitude_waps, file="rf_latitude_WAPS.Rdata")
+load("rf_latitude_WAPS.Rdata")
+
 rf_latitude_waps_prediction <- predict(rf_latitude_waps,validation_v6)
 postResample(rf_latitude_waps_prediction,validation_v6$LATITUDE)
 #       RMSE   Rsquared        MAE 
@@ -1227,14 +1225,17 @@ mean(abs((rf_latitude_waps_prediction-validation_v6$LATITUDE)/validation_v6$LATI
 
 #### W.2 Models // FLOORINDEX X BUILDINGID ####
 #### $ RF                        #### 
-rf_latitude<-randomForest::randomForest( LATITUDE ~ FLOORINDEX + BUILDINGID,
-                                          data = training_longitude_train,
-                                          ntree=5,
-                                          tuneLength = 10, 
-                                          trControl = Cross_validation )
+# rf_latitude<-randomForest::randomForest( LATITUDE ~ FLOORINDEX + BUILDINGID,
+  #                                        data = training_longitude_train,
+   #                                       ntree=5,
+    #                                      tuneLength = 10, 
+     #                                     trControl = Cross_validation )
 
-rf_latitude
+# rf_latitude
 saveRDS(rf_latitude, file="rf_latitude.RDS")
+save(rf_latitude, file="rf_latitude.RDS")
+load("rf_latitude.RDS")
+
 rf_latitude_prediction <- predict(rf_latitude,validation_v6)
 # RMSE   Rsquared        MAE 
 # 32.7175506  0.7883445 27.8087777
@@ -1244,13 +1245,15 @@ MRE_latitude_rf ## 5.716203e-06
 
 #### W.3 Models // FLOORINDEX X BUILDINGID X WAPS ####
 #### $ Knn - BEST                ####
-knn_latitude_2nd <- train( LATITUDE ~ . - FLOOR - LONGITUDE,
-                            data = training_longitude_train,
-                            method = "knn", 
-                            preProcess=c("center", "scale"),  
-                            trControl = Cross_validation )
-knn_latitude_2nd #  k 5  RMSE  8.167514    Rsquared  0.9853871  MAE 5.199581
-saveRDS(knn_latitude_2nd, file="knn_latitude_2nd.RDS")
+#knn_latitude_2nd <- train( LATITUDE ~ . - FLOOR - LONGITUDE,
+ #                           data = training_longitude_train,
+  #                          method = "knn", 
+   #                         preProcess=c("center", "scale"),  
+    #                        trControl = Cross_validation )
+# knn_latitude_2nd #  k 5  RMSE  8.167514    Rsquared  0.9853871  MAE 5.199581
+
+# save(knn_latitude_2nd, file="knn_latitude_2nd.Rdata")
+load("knn_latitude_2nd.Rdata")
 knn_latitude_2nd_prediction <- predict(knn_latitude_2nd,validation_v6)
 knn_latitude_2nd_prediction 
 postResample(knn_latitude_2nd_prediction,validation_v6$LATITUDE)
