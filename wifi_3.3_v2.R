@@ -556,15 +556,18 @@ validation_v3<-validation_clean[,-c(317:321)]
 validation_v3[validation_v3==100] <- -105
 
 #### --------------------- Distinct from script 3.1 --------------------- ####
-#### M. Position points - carfeull v ####
+#### M. Unique Position identifiers ####
 # TRAINING 
 training_clean_v3.1 <- training_clean_v3
 
 training_clean_v3.1$Unique_position <- paste(training_clean_v3$LONGITUDE, training_clean_v3$LATITUDE, training_clean_v3$FLOOR)
 training_clean_v3.1$Unique_position <- as.factor(training_clean_v3.1$Unique_position)
-str(training_clean_v3.1$Unique_position) ### only 933 levels
+levels(training_clean_v3.1$Unique_position) ### only 933 levels
 
-training_unique_points <-training_clean_v3.1[unique(training_clean_v3.1$Unique_position),] ### 933 x 317
+training_unique_points_v2 <- training_clean_v3.1[!duplicated(training_clean_v3.1$Unique_position),]
+dim(training_clean_v3.1)
+dim(training_unique_points_v2) ## 933 317
+dim(training_unique_points) ## 933 317
 
 # VALIDATION 
 validation_v3.1 <- validation_v3
@@ -572,10 +575,10 @@ validation_v3.1$Unique_position <- paste(validation_v3$LONGITUDE, validation_v3$
 validation_v3.1$Unique_position <- factor(validation_v3.1$Unique_position)
 str(validation_v3.1$Unique_position) # 1061 levels
 
-validation_unique_points <- validation_v3.1[unique(validation_v3.1$Unique_position),] ### 1061  317
+validation_unique_points <- validation_v3.1[!duplicated(validation_v3.1$Unique_position),] ### 1061  317
 
-ggplot(data= training_clean_v3.1, aes(x=LONGITUDE, y=LATITUDE))  + geom_point() + geom_point(data= training_unique_points  %>% select(Unique_position, LATITUDE, LONGITUDE), aes(x=LONGITUDE, y=LATITUDE, color="blue")) 
-ggplot(data= validation_v3.1, aes(x=LONGITUDE, y=LATITUDE))  + geom_point() + geom_point(data= validation_unique_points  %>% select(Unique_position, LATITUDE, LONGITUDE), aes(x=LONGITUDE, y=LATITUDE, color="red")) 
+# ggplot(data= training_unique_points_v2, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(training_unique_points_v2$FLOOR)
+# ggplot(data=validation_unique_points, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(validation_unique_points$FLOOR)
 
 #### N. Duplicated rows ####
 # sum(duplicated(training_clean_v3)) ## 715 duplicated
@@ -806,7 +809,6 @@ training_c10_part_building <- training_clean_v10[training_sample_buildingid_10$R
 dim(training_c10_part_building) ## 1870  317
 dim(training_clean_v10) ## 18687   317
 colnames(training_c10_part_building) ## 312 waps + long + lat + floor + buildingID + floorindex
-
 
 ######## T.3 Model // LONG + waps #### 
 ######## $ Svm Linear 3 ####

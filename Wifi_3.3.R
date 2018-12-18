@@ -402,9 +402,9 @@ apply(training_clean[,c(1:312)], 2, var)
 names(which(apply(training_clean[,c(1:312)], 2, var)==0)) ## 0
 
 ## by building
-names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
-names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
-names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
+# names(which(apply(train_TI[,c(1:312)], 2, var)==0)) ## 166
+# names(which(apply(train_TD[,c(1:312)], 2, var)==0)) ## 144
+# names(which(apply(train_TC[,c(1:312)], 2, var)==0)) ## 190 
 
 #### G. Create a dataset with erroneous values ####
 ## training_erroneous <-apply(training_clean,1,function(x)(x>=-30))
@@ -519,7 +519,7 @@ sum(apply(validation_clean[,c(1:312)],1,function(x)max(x)<=-30))
 # summary(training_clean_v2)
 # str(training_clean)## 19861 obs = 19402+472-13
 # str(training_error) ## 472 obs
-# str(training_clean_v2) ## 19402 obs. of  321 variables:
+# str(training_clean_v2) ## 19402 obs. of  321 variables
 
 #### I. Feature selection ####
 ## Deleting columns: "SPACEID" "RELATIVEPOSITION" "USERID" "PHONEID" "TIMESTAMP"       
@@ -596,7 +596,7 @@ is.factor(training_c_part_train$BUILDINGID)
    #                    data = training_c_part_train, 
      #                 method = "knn", 
       #                trControl = Cross_validation)
-Knn_building ##  K=5 //  accuracy - 0.9953652 kappa - 0.9927903 // 1 min 
+# Knn_building ##  K=5 //  accuracy - 0.9953652 kappa - 0.9927903 // 1 min 
 #save(Knn_building,file = "KNN_BUILDING.Rdata")
 load("KNN_BUILDING.Rdata")
 KNN_building_prediction <- predict(Knn_building,validation_v3) 
@@ -639,7 +639,7 @@ accuracy(svm_building_prediction, validation_v3$BUILDINGID)
   #                    method = "svmRadial",
    #                   trControl = Cross_validation)
 
-svm_building_radial
+# svm_building_radial
 # save(svm_building_radial,file = "svm_radial_building.Rdata")
 load("svm_linear_building.Rdata")
 # cost  Loss  Accuracy   Kappa // with all variables
@@ -662,7 +662,7 @@ table(validation_v3$BUILDINGID)
   #                   method = "rf", ntree=5 ,
    #                  tuneLength = 10, 
     #                 trControl = Cross_validation)
-save(rf_building,file = "rf_building.Rdata")
+# save(rf_building,file = "rf_building.Rdata")
 load("rf_building.Rdata")
 # mtry  Accuracy   Kappa
 #   2   0.9697573  0.9525263
@@ -1116,7 +1116,7 @@ postResample(rf_longitude_2nd_prediction,validation_v6$LONGITUDE)
 
 mean(abs((rf_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001235607
 
-#### $ Knn - BEST                ####
+#### $ Knn                       ####
 # knn_longitude_2nd <- train( LONGITUDE ~ . - FLOOR - LATITUDE,
   #                      data = training_longitude_train,
     #                    method = "knn", 
@@ -1224,6 +1224,7 @@ postResample(knn_longitude_3rd_prediction,validation_v6$LONGITUDE)
 mean(abs((knn_longitude_3rd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001243626
                             
 #### W.7 Models // WAPS X BUILDINGID  ####
+#### KNN - BEST                  #### 
 # knn_longitude_4th <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX,
   #                         data = training_longitude_train,
    #                        method = "knn",             
@@ -1279,7 +1280,7 @@ MRE_latitude_rf = mean(abs((rf_latitude_prediction-validation_v6$LATITUDE)/valid
 MRE_latitude_rf ## 5.716203e-06
 
 #### W.3 Models // FLOORINDEX X BUILDINGID X WAPS ####
-#### $ Knn - BEST                ####
+#### $ Knn                       ####
 #knn_latitude_2nd <- train( LATITUDE ~ . - FLOOR - LONGITUDE,
  #                           data = training_longitude_train,
   #                          method = "knn", 
@@ -1317,6 +1318,7 @@ postResample(knn_latitude_3rd_prediction,validation_v6$LATITUDE)
 mean(abs((knn_latitude_3rd_prediction-validation_v6$LATITUDE)/validation_v6$LATITUDE)) ##  1.586961e-06
 
 #### W.5 Models // BUILDING X WAPS ####
+#### KNN - BEST                  ####
 # knn_latitude_4th <- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
   #                        data = training_longitude_train,
    #                       method = "knn", 
@@ -1336,16 +1338,32 @@ mean(abs((knn_latitude_4th_prediction-validation_v6$LATITUDE)/validation_v6$LATI
 #### X. whats going on with validation dataset - waps 323 and 268 ####
 
 ## ploting 
-BEST_WAP268<-validation_v4%>% filter(Best_wap=="WAP268")
-BEST_WAP323<-validation_v4%>% filter(Best_wap=="WAP323")
+# BEST_WAP268<-validation_v4%>% filter(Best_wap=="WAP268")
+# BEST_WAP323<-validation_v4%>% filter(Best_wap=="WAP323")
 
-ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) 
-+ geom_point()
-+ geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red", size=5)
-+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue", size=5)
 
 ## comparison 
-ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
-ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
-ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
-ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
+# ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+# ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+
+# ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
+# ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
+
+
+#### Y. try to locate waps ####
+colnames(training_clean_v4)
+colnames(validation_v4)
+
+hchart(validation_v4$Best_wap) 
+levels(validation_v4$Best_wap) ## 175
+
+hchart(training_clean_v4$Best_wap)
+levels(training_clean_v4$Best_wap) ## 222
+
+validation_v4.2<-validation_v4[!duplicated(validation_v4$Best_wap),]
+training_clean_v4.2 <- training_clean_v4[!duplicated(training_clean_v4$Best_wap),]
+
+ggplot(data=validation_v4.2, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(validation_v4.2$FLOOR)
+ggplot(data=validation_v4, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
+
+## unfinished ##
