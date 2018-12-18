@@ -613,8 +613,8 @@ svm_building_nodupli_prediction <- predict(svm_building_nodupli,validation_v7)
 
 library(Metrics)
 accuracy(svm_building_nodupli_prediction , validation_v7$BUILDINGID) # 1
-#### P. Modelling FLOORINDEX ####
-#### P.1 Creating FLOORINDEX ####
+#### Q. Modelling FLOORINDEX ####
+#### Q.1 Creating FLOORINDEX ####
 training_clean_v8 <- training_clean_v7
 validation_v8 <- validation_v7
 training_clean_v8$FLOORINDEX <- paste0(training_clean_v8$BUILDINGID, training_clean_v8$FLOOR)
@@ -626,7 +626,7 @@ validation_v8$FLOORINDEX <- as.factor(validation_v8$FLOORINDEX)
 colnames(training_clean_v8)
 colnames(validation_v8)
 
-#### P.2 Creating training dataset for floorindex ####
+#### Q.2 Creating training dataset for floorindex ####
 training_sample_floorindex_v8<-createDataPartition(y=training_clean_v8$FLOORINDEX,  p=0.10)
 class(training_sample_floorindex_v8) ### list 
 
@@ -640,7 +640,7 @@ colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildin
 # prop.table(table(training_clean_v8$FLOORINDEX))
 ### good representativity 
 
-#### P.3 Model // building + waps ####
+#### Q.3 Model // building + waps ####
 # with duplicates: best model: svm linear / accuracy 1 
 # set.seed(123)
 # svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
@@ -658,4 +658,116 @@ svmLinear_floorindex_waps_build_nodupli_prediction
 accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.9090909
 
 
+#### Q.4 Include FLOORINDEX predictions - v9 ####
+training_clean_v9 <- training_clean_v8
+validation_v9 <- validation_v8
+validation_v9$FLOORINDEX <- svmLinear_floorindex_waps_build_nodupli_prediction
+dim(validation_v9)
+dim(training_clean_v9)
+#### R. Modelling LONGITUDE ####
+#### R.1 Creating training dataset for longitude ####
+training_sample_long_v9<-createDataPartition(y=training_clean_v9$LONGITUDE,  p=0.10)
+class(training_sample_long_v9) ### list 
 
+## Training model (sample)
+training_c9_part_longitude <- training_clean_v9[training_sample_long_v9$Resample1,]
+dim(training_c9_part_longitude) ## 1871  317
+dim(training_clean_v9) ## 18687   317
+colnames(training_c9_part_longitude) ## 312 waps + long + lat + floor + buildingID + floorindex
+
+
+#### R.2 Model // BUILDING + waps ####
+#### $ Knn - best ####
+# knn_longitude_nodupli <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX,
+  #                    data = training_c9_part_longitude,
+   #                method = "knn",     
+    #               preProcess=c("center", "scale"),        
+     #              trControl = Cross_validation)
+
+# knn_longitude_nodupli #  k 5   RMSE   9.397362  Rsquared    0.9943213     MAE  5.934774
+                           
+# save(knn_longitude_nodupli, file="knn_longitude_nodupli.Rdata")
+load("knn_longitude_nodupli.Rdata")
+knn_longitude_nodupli_prediction <- predict(knn_longitude_nodupli,validation_v9)
+knn_longitude_nodupli_prediction
+postResample(knn_longitude_nodupli_prediction,validation_v9$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#  17.170668   0.979887   8.520379 
+
+#### R.3 Model // FLOORINDEX + waps ####
+#### $ Knn        ####
+# knn_longitude_nodupli_floorindex <- train(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID,
+     #            data = training_c9_part_longitude,
+    #            method = "knn",     
+   #            preProcess=c("center", "scale"),        
+  #            trControl = Cross_validation)
+
+# knn_longitude_nodupli_floorindex 
+# save(knn_longitude_nodupli_floorindex, file="knn_longitude_nodupli_floorindex.Rdata")
+load("knn_longitude_nodupli_floorindex.Rdata")
+knn_longitude_nodupli_floorindex_prediction <- predict(knn_longitude_nodupli_floorindex,validation_v9)
+knn_longitude_nodupli_floorindex_prediction
+postResample(knn_longitude_nodupli_floorindex_prediction,validation_v9$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#  17.4331731  0.9793754  8.6967551 
+
+#### S. Modelling LATITUDE ####
+#### S.1 Creating training dataset for latutude ####
+training_sample_lat_v9<-createDataPartition(y=training_clean_v9$LATITUDE,  p=0.10)
+class(training_sample_lat_v9) ### list 
+
+## Training model (sample)
+training_c9_part_latitude <- training_clean_v9[training_sample_lat_v9$Resample1,]
+dim(training_c9_part_latitude) ## 1871  317
+dim(training_clean_v9) ## 18687   317
+colnames(training_c9_part_latitude) ## 312 waps + long + lat + floor + buildingID + floorindex
+
+#### S.2 Model // BUILDINGID + waps ####
+#### $ KNN - best #### 
+# knn_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+  # data = training_c9_part_latitude,
+ # method = "knn", 
+# preProcess=c("center", "scale"),  
+# trControl = Cross_validation )
+
+# knn_latitude_nodupli #  k  5 RMSE 8.014935      Rsquared  0.9860376    MAE  5.135546
+# save(knn_latitude_nodupli, file="knn_latitude_4th.Rdata")
+load("knn_latitude_nodupli.Rdata")
+knn_latitude_nodupli_prediction <- predict(knn_latitude_nodupli,validation_v9)
+knn_latitude_nodupli_prediction 
+postResample(knn_latitude_nodupli_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 15.9535166  0.9486272   8.4783345 
+
+#### $ SVM Linear ####
+# svmLinear_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+  #                           data = training_c9_part_latitude,
+   #                          method = "svmLinear", 
+    #                         preProcess=c("center", "scale"),  
+     #                        trControl = Cross_validation )
+
+# svmLinear_latitude_nodupli
+# save(svmLinear_latitude_nodupli, file="knn_latitude_4th.Rdata")
+load("svmLinear_latitude_nodupli.Rdata")
+svmLinear_latitude_nodupli_prediction <- predict(svmLinear_latitude_nodupli,validation_v9)
+svmLinear_latitude_nodupli_prediction 
+postResample(svmLinear_latitude_nodupli_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 18.4417116  v0.9319652 13.6428134 
+
+#### S.2 Model // FLOORINDEX + waps ####
+#### $ Knn        ####
+knn_latitude_nodupli_floorindex<- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+       data = training_c9_part_latitude,
+       method = "knn", 
+       preProcess=c("center", "scale"),  
+       trControl = Cross_validation )
+
+knn_latitude_nodupli_floorindex 
+save(knn_latitude_nodupli_floorindex , file="knn_latitude_nodupli_floorindex .Rdata")
+load("knn_latitude_nodupli_floorindex .Rdata")
+knn_latitude_nodupli_floorindex_prediction <- predict(knn_latitude_nodupli_floorindex,validation_v9)
+knn_latitude_nodupli_floorindex_prediction 
+postResample(knn_latitude_nodupli_floorindex_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 15.2888766  0.9530216  8.4852797 
