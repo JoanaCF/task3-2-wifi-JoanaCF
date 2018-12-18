@@ -554,24 +554,108 @@ validation_v3<-validation_clean[,-c(317:321)]
 validation_v3[validation_v3==100] <- -105
 
  ########## Distinct from script 3.1 ############
-#### M. Position points ####
+#### M. Position points - carfeull v3####
 # str(training_clean_v3) ## 19402 obs. of  317 variables:
-training_clean_v3$Unique_position <- paste(training_clean_v3$LONGITUDE, training_clean_v3$LATITUDE, training_clean_v3$FLOOR)
-training_clean_v3$Unique_position <- factor(training_clean_v3$Unique_position)
-str(training_clean_v3$Unique_position) ### only 933 levels
+# training_clean_v3$Unique_position <- paste(training_clean_v3$LONGITUDE, training_clean_v3$LATITUDE, training_clean_v3$FLOOR)
+# training_clean_v3$Unique_position <- factor(training_clean_v3$Unique_position)
+# str(training_clean_v3$Unique_position) ### only 933 levels
 
-validation_v3$Unique_position <- paste(validation_v3$LONGITUDE, validation_v3$LATITUDE, validation_v3$FLOOR)
-validation_v3$Unique_position <- factor(validation_v3$Unique_position)
-str(validation_v3$Unique_position) # 1061 levels
+# validation_v3$Unique_position <- paste(validation_v3$LONGITUDE, validation_v3$LATITUDE, validation_v3$FLOOR)
+# validation_v3$Unique_position <- factor(validation_v3$Unique_position)
+# str(validation_v3$Unique_position) # 1061 levels
 
 
 #### N. Duplicated rows ####
-sum(duplicated(training_clean_v3)) ## 715 duplicated
-sum(duplicated(validation_v3)) ## 0 duplicated
+# sum(duplicated(training_clean_v3)) ## 715 duplicated
+# sum(duplicated(validation_v3)) ## 0 duplicated
 duplicated_rows<-training_clean_v3[duplicated(training_clean_v3),]
 
-dim(training_clean_v3) ## 19402   318
-dim(training_clean_v3[duplicated(training_clean_v3),]) ## 715 318
-dim(training_clean_v3[!duplicated(training_clean_v3),]) ## 18687   318
-training_clean_v7 <- training_clean_v3[!duplicated(training_clean_v3),]
-dim(training_clean_v7)
+dim(training_clean_v3) ## 19402   318 / 19402   317 / 19402   316
+dim(training_clean_v3[duplicated(training_clean_v3),]) ## 715 318 /  715 317 /  715 316
+dim(training_clean_v3[!duplicated(training_clean_v3),]) ## 18687   318 / 18687   317 / 18687   316
+training_clean_v7 <- training_clean_v3[!duplicated(training_clean_v3),] 
+dim(training_clean_v7)  # /  18687   317 / 18687   316
+dim(validation_v3) # / 1111  317 / 1111  316
+validation_v7 <- validation_v3
+
+
+#### O. Creating training dataset - data partition ####
+training_sample_buildingid_v7<-createDataPartition(y=training_clean_v7$BUILDINGID,  p=0.10)
+class(training_sample_buildingid_v7) ### list 
+
+## Training model ( sample )
+training_c7_part_buildingID <- training_clean_v7[training_sample_buildingid_v7$Resample1,]
+dim(training_c7_part_buildingID) ## 1870  316
+colnames(training_c7_part_buildingID) ## 312 waps + long + lat + floor + buildingID 
+
+## Cross validation 
+Cross_validation <- trainControl(
+  method = "repeatedcv",
+  number = 3,
+  repeats = 3,
+  allowParallel = TRUE)
+
+#### P. Modelling BUILDINGID ####
+# with duplicates: best model: svm linear / accuracy 1 
+# set.seed (123)
+# svm_building_nodupli <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
+  #   data = training_c7_part_buildingID, 
+    #                 method = "svmLinear3", 
+      #             trControl = Cross_validation)
+
+# svm_building_nodupli
+# cost  Loss  Accuracy   Kappa 
+# 0.25  L1    1          1
+
+# save(svm_building_nodupli,file = "svm_building_nodupli.Rdata")
+load("svm_building_nodupli.Rdata")
+svm_building_nodupli_prediction <- predict(svm_building_nodupli,validation_v7)
+
+library(Metrics)
+accuracy(svm_building_nodupli_prediction , validation_v7$BUILDINGID) # 1
+#### P. Modelling FLOORINDEX ####
+#### P.1 Creating FLOORINDEX ####
+training_clean_v8 <- training_clean_v7
+validation_v8 <- validation_v7
+training_clean_v8$FLOORINDEX <- paste0(training_clean_v8$BUILDINGID, training_clean_v8$FLOOR)
+validation_v8$FLOORINDEX <- paste0(validation_v8$BUILDINGID, validation_v8$FLOOR)
+
+training_clean_v8$FLOORINDEX <- as.factor(training_clean_v8$FLOORINDEX)
+validation_v8$FLOORINDEX <- as.factor(validation_v8$FLOORINDEX)
+
+colnames(training_clean_v8)
+colnames(validation_v8)
+
+#### P.2 Creating training dataset for floorindex ####
+training_sample_floorindex_v8<-createDataPartition(y=training_clean_v8$FLOORINDEX,  p=0.10)
+class(training_sample_floorindex_v8) ### list 
+
+## Training model ( sample )
+training_c8_part_floorindex <- training_clean_v8[training_sample_floorindex_v8$Resample1,]
+dim(training_c8_part_floorindex) ## 1875  317
+dim(training_clean_v8) ## 18687   317
+colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildingID + floorindex
+
+# prop.table(table(training_c8_part_floorindex$FLOORINDEX))
+# prop.table(table(training_clean_v8$FLOORINDEX))
+### good representativity 
+
+#### P.3 Model // building + waps ####
+# with duplicates: best model: svm linear / accuracy 1 
+# set.seed(123)
+# svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+  #  data = training_c8_part_floorindex, method = "svmLinear", trControl = Cross_validation, preProcess= c("center","scale"))
+
+# svmLinear_floorindex_waps_build_nodupli 
+### acc=   0.9711943  kappa = 0.9684839
+
+# save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
+load("svmLinear_floorindex_waps_build_nodupli .Rdata")
+svmLinear_floorindex_waps_build_nodupli_prediction <- predict(svmLinear_floorindex_waps_build_nodupli,validation_v8) 
+svmLinear_floorindex_waps_build_nodupli_prediction
+
+## Accuracy 
+accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.9090909
+
+
+
