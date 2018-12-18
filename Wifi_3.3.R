@@ -214,11 +214,11 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 
 #ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+facet_wrap(~RELATIVEPOSITION)
 
-# ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
-# ggplot_coordinates + geom_point(size=4, aes(color = ifelse(LONGITUDE < -7580, "TI",
-  #                                    ifelse( LONGITUDE < - 7400 & LATITUDE > 4864830, "TD", "TC")))) +
-   # scale_color_manual(values = c("TI" = "red", "TD" = "purple", "TC" = "blue"),
-    #          name = "Buildings")
+ggplot_coordinates <- ggplot(data=trainingData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+ggplot_coordinates + geom_point(size=4, aes(color = ifelse(LONGITUDE < -7580, "TI",
+                                    ifelse( LONGITUDE < - 7400 & LATITUDE > 4864830, "TD", "TC")))) +
+ scale_color_manual(values = c("TI" = "red", "TD" = "purple", "TC" = "blue"),
+          name = "Buildings")
 
 # ggplot_coordinates+ geom_point(aes(color = ifelse(FLOOR == 0, "0",
     #                                                    ifelse(FLOOR ==1, "1",
@@ -228,13 +228,13 @@ validationData$FLOOR <- as.factor(validationData$FLOOR)
 
 
 ## validation
-#ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
+ggplot_coordinates_valid <- ggplot(data=validationData, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()
 
-#ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
-        #                                                 ifelse(FLOOR ==1, "1",
-         #                                                        ifelse(FLOOR == 2, "2", 
-          #                                                             ifelse(FLOOR == 3, "3","4"))))))+
- #scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
+ggplot_coordinates_valid + geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                               ifelse(FLOOR ==1, "1",
+                                                     ifelse(FLOOR == 2, "2", 
+                                                                    ifelse(FLOOR == 3, "3","4"))))))+
+ scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
 #### SPACE ID and FLOOR and BUILDINGID and RELATIVE POSITION 
 # qplot(trainingData$SPACEID, trainingData$FLOOR)
@@ -1125,7 +1125,7 @@ mean(abs((rf_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LON
 knn_longitude_2nd #  k 5  RMSE  10.34798    Rsquared  0.9929923   MAE 6.392731
 
 # save(knn_longitude_2nd, file="knn_longitude_2nd.Rdata")
-load("rf_longitude_2nd.Rdata")
+load("knn_longitude_2nd.Rdata")
 knn_longitude_2nd_prediction <- predict(knn_longitude_2nd,validation_v6)
 knn_longitude_2nd_prediction
 postResample(knn_longitude_2nd_prediction,validation_v6$LONGITUDE)
@@ -1140,7 +1140,7 @@ mean(abs((knn_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation_v6$LO
     #                        preProcess=c("center", "scale"),  
      #                       trControl = Cross_validation)
 
-svmLinear_longitude_2nd # RMSE - 16.23015      Rsquared - 0.9828036    MAE -  12.04588  
+# svmLinear_longitude_2nd # RMSE - 16.23015      Rsquared - 0.9828036    MAE -  12.04588  
 
 # save(svmLinear_longitude_2nd , file="svmLinear_longitude_2nd.Rdata")
 load("svmLinear_longitude_2nd.Rdata")
@@ -1158,7 +1158,7 @@ mean(abs((svmLinear_longitude_2nd_prediction-validation_v6$LONGITUDE)/validation
     #                              preProcess=c("center", "scale"),  
      #                             trControl = Cross_validation)
 
-svmRadial_longitude_2nd # RMSE - 97.14524     Rsquared - 0.7156191    MAE - 73.19824
+# svmRadial_longitude_2nd # RMSE - 97.14524     Rsquared - 0.7156191    MAE - 73.19824
 
 # save(svmRadial_longitude_2nd , file="svmRadial_longitude_2nd.Rdata")
 load("svmRadial_longitude_2nd.Rdata")
@@ -1205,6 +1205,42 @@ postResample(rf_longitude_WAPS_prediction,validation_v6$LONGITUDE)
 #   21.849163  0.968479  12.525460 
 mean(abs((rf_longitude_WAPS_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001665634
 
+#### W.6 Models // WAPS X FLOORINDEX  ####
+# knn_longitude_3rd <- train(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID,
+  #                  data = training_longitude_train,
+   #                method = "knn",             
+    #               preProcess=c("center", "scale"),  
+     #              trControl = Cross_validation )
+
+# knn_longitude_3rd #  k 5    RMSE  10.46609     Rsquared   0.9928036   MAE 6.408264
+                            
+# save(knn_longitude_3rd, file="knn_longitude_3rd.Rdata")
+load("knn_longitude_3rd.Rdata")
+knn_longitude_3rd_prediction <- predict(knn_longitude_3rd,validation_v6)
+knn_longitude_3rd_prediction
+postResample(knn_longitude_3rd_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 24.0032019  0.9613398  9.3788797    
+mean(abs((knn_longitude_3rd_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001243626
+                            
+#### W.7 Models // WAPS X BUILDINGID  ####
+# knn_longitude_4th <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX,
+  #                         data = training_longitude_train,
+   #                        method = "knn",             
+    #                       preProcess=c("center", "scale"),  
+     #                      trControl = Cross_validation )
+
+# knn_longitude_4th #  k 5   RMSE   9.934892 Rsquared    0.9935689     MAE  6.283078
+
+# save(knn_longitude_4th, file="knn_longitude_4th.Rdata")
+load("knn_longitude_4th.Rdata")
+knn_longitude_4th_prediction <- predict(knn_longitude_4th,validation_v6)
+knn_longitude_4th_prediction
+postResample(knn_longitude_4th_prediction,validation_v6$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+# 21.1205357  0.9698898  8.5791214 
+mean(abs((knn_longitude_4th_prediction-validation_v6$LONGITUDE)/validation_v6$LONGITUDE)) ## 0.001137563
+
 ######### Y. Modelling LATITUDE  ####
 #### W.1 Models // WAPS          ####
 #### $ RF                        ####
@@ -1214,7 +1250,7 @@ rf_latitude_waps<-randomForest::randomForest(LATITUDE ~. - FLOOR - LONGITUDE - F
                                               tuneLength = 10, 
                                               trControl = Cross_validation )
 
-save(rf_latitude_waps, file="rf_latitude_WAPS.Rdata")
+# save(rf_latitude_waps, file="rf_latitude_WAPS.Rdata")
 load("rf_latitude_WAPS.Rdata")
 
 rf_latitude_waps_prediction <- predict(rf_latitude_waps,validation_v6)
@@ -1232,8 +1268,7 @@ mean(abs((rf_latitude_waps_prediction-validation_v6$LATITUDE)/validation_v6$LATI
      #                                     trControl = Cross_validation )
 
 # rf_latitude
-saveRDS(rf_latitude, file="rf_latitude.RDS")
-save(rf_latitude, file="rf_latitude.RDS")
+# save(rf_latitude, file="rf_latitude.RDS")
 load("rf_latitude.RDS")
 
 rf_latitude_prediction <- predict(rf_latitude,validation_v6)
@@ -1261,12 +1296,56 @@ postResample(knn_latitude_2nd_prediction,validation_v6$LATITUDE)
 # 13.8643623  0.9610424  7.6960743  
 mean(abs((knn_latitude_2nd_prediction-validation_v6$LATITUDE)/validation_v6$LATITUDE)) ## 1.581959e-06
 
+#### W.4 Models // FLOORINDEX X WAPS ####
 
-save("training_clean_v2",file="test.Rdata")
-load("test.Rdata")
-training_clean_v2
+# colnames(training_longitude_train)
 
+# knn_latitude_3rd <- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+  #                       data = training_longitude_train,
+   #                       method = "knn", 
+    #                     preProcess=c("center", "scale"),  
+     #                   trControl = Cross_validation )
+# knn_latitude_3rd #  k  5 RMSE 8.070354     Rsquared 0.9859153    MAE 5.242199
 
+# save(knn_latitude_3rd, file="knn_latitude_3rd.Rdata")
+load("knn_latitude_3rd.Rdata")
+knn_latitude_3rd_prediction <- predict(knn_latitude_3rd,validation_v6)
+knn_latitude_3rd_prediction 
+postResample(knn_latitude_3rd_prediction,validation_v6$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 13.9474474  0.9605795  7.7204089 
+mean(abs((knn_latitude_3rd_prediction-validation_v6$LATITUDE)/validation_v6$LATITUDE)) ##  1.586961e-06
 
+#### W.5 Models // BUILDING X WAPS ####
+# knn_latitude_4th <- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+  #                        data = training_longitude_train,
+   #                       method = "knn", 
+    #                      preProcess=c("center", "scale"),  
+     #                     trControl = Cross_validation )
+# knn_latitude_4th #  k  5 RMSE  7.915534      Rsquared  7.915534     MAE  5.179716
 
+# save(knn_latitude_4th, file="knn_latitude_4th.Rdata")
+load("knn_latitude_4th.Rdata")
+knn_latitude_4th_prediction <- predict(knn_latitude_4th,validation_v6)
+knn_latitude_4th_prediction 
+postResample(knn_latitude_4th_prediction,validation_v6$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 13.8662778  0.9610396  7.7274167
+mean(abs((knn_latitude_4th_prediction-validation_v6$LATITUDE)/validation_v6$LATITUDE)) ## 1.588402e-06
 
+#### X. whats going on with validation dataset - waps 323 and 268 ####
+
+## ploting 
+BEST_WAP268<-validation_v4%>% filter(Best_wap=="WAP268")
+BEST_WAP323<-validation_v4%>% filter(Best_wap=="WAP323")
+
+ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) 
++ geom_point()
++ geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red", size=5)
++ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue", size=5)
+
+## comparison 
+ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
+ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
