@@ -814,17 +814,30 @@ colnames(training_c10_part_building) ## 312 waps + long + lat + floor + building
 ######## $ Svm Linear 3 ####
 colnames(training_c10_part_building)
 
-set.seed (123)
-svm_building_nodupli_long <- train(BUILDINGID ~ . - LATITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
-data = training_c10_part_building, 
-method = "svmLinear3", 
-preProcess = c("center", "scale"),
-trControl = Cross_validation)
+# set.seed (123)
+# svm_building_nodupli_long <- train(BUILDINGID ~ . - LATITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
+# data = training_c10_part_building, 
+# method = "svmLinear3", 
+# preProcess = c("center", "scale"),
+# trControl = Cross_validation)
 
-save(svm_building_nodupli_long,file = "svm_building_nodupli_long.Rdata")
+# save(svm_building_nodupli_long,file = "svm_building_nodupli_long.Rdata")
 load("svm_building_nodupli_long.Rdata")
 svm_building_nodupli_long_prediction <- predict(svm_building_nodupli_long,validation_v10)
 accuracy(svm_building_nodupli_long_prediction , validation_v10$BUILDINGID) #  0.9972997
+
+######## $ Knn #####
+knn_building_nodupli_long <- train(BUILDINGID ~ . - LATITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
+                                   data = training_c10_part_building, 
+                                   method = "knn", 
+                                   preProcess = c("center", "scale"),
+                                   trControl = Cross_validation)
+
+save(knn_building_nodupli_long,file = "knn_building_nodupli_long.Rdata")
+load("knn_building_nodupli_long.Rdata")
+knn_building_nodupli_long_prediction <- predict(knn_building_nodupli_long,validation_v10)
+accuracy(knn_building_nodupli_long_prediction , validation_v10$BUILDINGID) # 0.9891989
+
 
 ######## T.3 Model // LATITUDE + waps #### 
 ######## $ Svm Linear 3 ####
@@ -839,6 +852,19 @@ accuracy(svm_building_nodupli_long_prediction , validation_v10$BUILDINGID) #  0.
 load("svm_building_nodupli_latit.Rdata")
 svm_building_nodupli_latit_prediction <- predict(svm_building_nodupli_latit,validation_v10)
 accuracy(svm_building_nodupli_latit_prediction , validation_v10$BUILDINGID) # 0.9981998
+
+####### $ knn ####
+# set.seed (123)
+# knn_building_nodupli_latit <- train(BUILDINGID ~ . - LONGITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
+  #               data = training_c10_part_building, 
+   #              method = "knn", 
+    #            preProcess = c("center", "scale"),
+     #           trControl = Cross_validation)
+
+# save(knn_building_nodupli_latit,file = "knn_building_nodupli_latit.Rdata")
+load("knn_building_nodupli_latit.Rdata")
+knn_building_nodupli_latit_prediction <- predict(knn_building_nodupli_latit,validation_v10)
+accuracy(knn_building_nodupli_latit_prediction , validation_v10$BUILDINGID) # 0.990099
 
 #### U. Modelling FLOORINDEX based on latittude / longitude ####
 ######## U.1 Create a training set based on FLOORINDEX ####
@@ -904,3 +930,23 @@ accuracy(svm_FLOORINDEX_nodupli_long_prediction , validation_v10$FLOORINDEX) # 0
 load("knn_FLOORINDEX_nodupli_long.Rdata")
 knn_FLOORINDEX_nodupli_long_prediction <- predict(knn_FLOORINDEX_nodupli_long,validation_v10)
 accuracy(knn_FLOORINDEX_nodupli_long_prediction , validation_v10$FLOORINDEX) # 0.8136814
+
+#### V. Modelling FLOORINDEX based on predicted building and predicted latitute / longitude
+######## V.1 Including building prediction in validation dataset ####
+validation_v11 <- validation_v10
+validation_v11$BUILDINGID <- svm_building_nodupli_latit_prediction
+
+######## V.2 Modelling // building (pred), waps, Long ####
+set.seed (123)
+svm_FLOORINDEX_nodupli_long_build <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BuildingID_Pred, 
+          data = training_c10_part_floorindex, 
+          method = "svmLinear3",  
+          preProcess = c("center", "scale"),
+          trControl = Cross_validation)
+
+save(svm_FLOORINDEX_nodupli_long_build,file = "svm_FLOORINDEX_nodupli_long_build.Rdata")
+load("svm_FLOORINDEX_nodupli_long_build.Rdata")
+svm_FLOORINDEX_nodupli_long_build_prediction <- predict(svm_FLOORINDEX_nodupli_long_build,validation_v11)
+accuracy(svm_FLOORINDEX_nodupli_long_build_prediction, validation_v11$FLOORINDEX) #  0.859586 ( vs 0.8613861 - sem building predicted)
+
+
