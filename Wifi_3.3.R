@@ -220,11 +220,11 @@ ggplot_coordinates + geom_point(size=4, aes(color = ifelse(LONGITUDE < -7580, "T
  scale_color_manual(values = c("TI" = "red", "TD" = "purple", "TC" = "blue"),
           name = "Buildings")
 
-# ggplot_coordinates+ geom_point(aes(color = ifelse(FLOOR == 0, "0",
-    #                                                    ifelse(FLOOR ==1, "1",
-     #                                                           ifelse(FLOOR == 2, "2", 
-      #                                                                 ifelse(FLOOR == 3, "3","4"))))))+
-       #   scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
+ggplot_coordinates+ geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                                    ifelse(FLOOR ==1, "1",
+                                                           ifelse(FLOOR == 2, "2", 
+                                                                ifelse(FLOOR == 3, "3","4"))))))+
+   scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
 
 ## validation
@@ -1338,16 +1338,18 @@ mean(abs((knn_latitude_4th_prediction-validation_v6$LATITUDE)/validation_v6$LATI
 #### X. whats going on with validation dataset - waps 323 and 268 ####
 
 ## ploting 
-# BEST_WAP268<-validation_v4%>% filter(Best_wap=="WAP268")
-# BEST_WAP323<-validation_v4%>% filter(Best_wap=="WAP323")
+str(training_clean_v4$Best_wap)
+
+BEST_WAP268<-validation_v4%>% filter(Best_wap=="WAP268")
+BEST_WAP323<-validation_v4%>% filter(Best_wap=="WAP323")
 
 
 ## comparison 
-# ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
-# ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
+ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() 
 
-# ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
-# ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
+ggplot(data=training_clean_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="red")
+ggplot(data=validation_v4%>% filter(FLOORINDEX=="TI2"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + geom_point(data = BEST_WAP268, aes(x=LONGITUDE, y=LATITUDE), colour="red")+ geom_point(data = BEST_WAP323, aes(x=LONGITUDE, y=LATITUDE), colour="blue")
 
 
 #### Y. try to locate waps ####
