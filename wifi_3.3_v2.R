@@ -133,8 +133,8 @@ trainingData$RELATIVEPOSITION <- factor(trainingData$RELATIVEPOSITION,
 #str(trainingData$SPACEID)
 #hchart(trainingData$SPACEID)
 trainingData$SPACEID<-as.factor(trainingData$SPACEID)
-#hchart(trainingData$SPACEID)
-#str(trainingData$SPACEID)
+hchart(trainingData$SPACEID)
+summary(trainingData$SPACEID)
 ### C: 123 levels - highest frequency: 101- 104; 106 - 108; 201- 202
 
 ### validation
@@ -415,24 +415,24 @@ training_error<-training_clean[apply(training_clean[,c(1:312)],1,function(x)max(
 # str(training_error)
 
 ## check what's going on
-# hchart(training_error$BUILDINGID)
+hchart(training_error$BUILDINGID)
 ### 454 only from TC building 
-# hchart(training_error$FLOOR)
+hchart(training_error$FLOOR)
 ### 252 only on 3 floor and 200 on 4th floor
-# hchart(training_error$USERID)
+hchart(training_error$USERID)
 ### 397 userid =6 // 52 userid=14 // 5 userid= 3 // 9 userid=1 
-# hchart(training_error$PHONEID)
+hchart(training_error$PHONEID)
 ### 397 phoneid = 19 // 52 phoneid=7 // 5 phoneid =16 // 13 phoneid 14
 #hchart(training_error$RELATIVEPOSITION)
 ### 464 outside 
 #hchart(training_error$SPACEID)
 ### no relevant conclusion
 
-# ggplot(data=training_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
-#                                                                            ifelse(FLOOR ==1, "1",
-#                                                                                  ifelse(FLOOR == 2, "2", 
-#                                                                                         ifelse(FLOOR == 3, "3","4"))))))+
-# scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
+ggplot(data=training_error %>% filter (BUILDINGID=="TC"), aes(x=LONGITUDE, y=LATITUDE)) + geom_point(aes(color = ifelse(FLOOR == 0, "0",
+                                                                            ifelse(FLOOR ==1, "1",
+                                                                                  ifelse(FLOOR == 2, "2", 
+                                                                                         ifelse(FLOOR == 3, "3","4"))))))+
+ scale_color_manual(values = c("1"= "red", "2"="purple", "3"="pink", "0"="orange", "4"="yellow"), name="Floors")+facet_wrap(~BUILDINGID + FLOOR)
 
 #ggplot(data=training_error, aes(x=USERID, y=PHONEID)) + geom_point() + facet_wrap(training_error$BUILDINGID)
 ### C: Phone 19 belongs to user 6, phone 7 belongs to user 14, phone 14 belongs to user 1, user 9 and user 16 
@@ -455,7 +455,10 @@ PHONEID_19 <-training_clean %>% filter(PHONEID==19)
 # hchart(PHONEID_19$USERID)
 ### only user 6 
 USERID_6 <-training_clean %>% filter(USERID==6)
-### C: 980 x 321
+dim(USERID_6)
+### C: 980 322
+dim(USERID_6_error)
+### C:  397 322
 # hchart(USERID_6$PHONEID)
 ### only phone id 19 
 USERID_6_error <-training_error %>% filter(USERID==6)
@@ -470,12 +473,11 @@ USERID_14_error <-training_error %>% filter(USERID==14)
 ### C:  52 x 321
 
 ### all path - user 6 
-# ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
+ggplot(data=USERID_6, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6$FLOOR + USERID_6$BUILDINGID)
 ### it has only passed through a corridor of the 3rd floor and a corridor of 4th floor of one building (TC)
 
 ### path with errors- user 6 
-# ggplot(data=USERID_6_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_6_error$FLOOR + USERID_6_error$BUILDINGID)
-### same path without errors - device problem?
+ggplot(data=USERID_6_error, aes(x=LONGITUDE, y=LATITUDE)) + geom_point(colour="red") + facet_wrap(~ USERID_6_error$FLOOR + USERID_6_error$BUILDINGID)
 
 ### all path - user 14 
 # ggplot(data=USERID_14, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(~ USERID_14$FLOOR + USERID_14$BUILDINGID)
@@ -499,8 +501,8 @@ USERID_6_error$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6_error$TIMESTAMP),ori
 USERID_6$TIMESTAMP_dt<-as.POSIXct(as.numeric(USERID_6$TIMESTAMP),origin="1970-01-01",tz="GMT")
 #head(USERID_6_error$TIMESTAMP_dt)
 
-# ggplot(data = USERID_6_error, aes(x = USERID_6_error$TIMESTAMP_dt, y = USERID_6_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_6_error$FLOOR)
-# ggplot(data = USERID_6, aes(x = USERID_6$TIMESTAMP_dt, y = USERID_6$BUILDINGID)) + geom_point()+facet_wrap(USERID_6$FLOOR)
+ggplot(data = USERID_6_error, aes(x = USERID_6_error$TIMESTAMP_dt, y = USERID_6_error$BUILDINGID)) + geom_point()+facet_wrap(USERID_6_error$FLOOR)
+ggplot(data = USERID_6, aes(x = USERID_6$TIMESTAMP_dt, y = USERID_6$BUILDINGID)) + geom_point()+facet_wrap(USERID_6$FLOOR)
 ### C: errors happened along the way 
 
 ### all path - random user 
@@ -522,6 +524,9 @@ sum(apply(validation_clean[,c(1:312)],1,function(x)max(x)<=-30))
 # str(training_clean)## 19861 obs = 19402+472-13
 # str(training_error) ## 472 obs
 # str(training_clean_v2) ## 19402 obs. of  321 variables:
+
+dim(trainingData)
+1-19402/19937
 
 #### I. Feature selection ####
 ## Deleting columns: "SPACEID" "RELATIVEPOSITION" "USERID" "PHONEID" "TIMESTAMP"       
@@ -577,11 +582,11 @@ str(validation_v3.1$Unique_position) # 1061 levels
 
 validation_unique_points <- validation_v3.1[!duplicated(validation_v3.1$Unique_position),] ### 1061  317
 
-# ggplot(data= training_unique_points_v2, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(training_unique_points_v2$FLOOR)
-# ggplot(data=validation_unique_points, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(validation_unique_points$FLOOR)
+ggplot(data= training_unique_points_v2, aes(x=LONGITUDE, y=LATITUDE)) + geom_point() + facet_wrap(training_unique_points_v2$FLOOR)
+ggplot(data=validation_unique_points, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(validation_unique_points$FLOOR)
 
 #### N. Duplicated rows ####
-# sum(duplicated(training_clean_v3)) ## 715 duplicated
+sum(duplicated(training_clean_v3)) ## 715 duplicated
 # sum(duplicated(validation_v3)) ## 0 duplicated
 duplicated_rows<-training_clean_v3[duplicated(training_clean_v3),]
 
@@ -602,7 +607,7 @@ class(training_sample_buildingid_v7) ### list
 ## Training model ( sample )
 training_c7_part_buildingID <- training_clean_v7[training_sample_buildingid_v7$Resample1,]
 dim(training_c7_part_buildingID) ## 1870  316
-colnames(training_c7_part_buildingID) ## 312 waps + long + lat + floor + buildingID 
+colnames(training_c7_part_buildingID) ## 312 waps + long + lat + floor + buildingID + !(BuildingID_Pred)
 
 ## Cross validation 
 Cross_validation <- trainControl(
@@ -615,10 +620,10 @@ Cross_validation <- trainControl(
 ######## $ Svm Linear 3 ####
 # with duplicates: best model: svm linear / accuracy 1 
 # set.seed (123)
-# svm_building_nodupli <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
-  #   data = training_c7_part_buildingID, 
-    #                 method = "svmLinear3", 
-      #             trControl = Cross_validation)
+# svm_building_nodupli <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR - BuildingID_Pred, 
+  # data = training_c7_part_buildingID, 
+   #              method = "svmLinear3", 
+    #         trControl = Cross_validation)
 
 # svm_building_nodupli
 # cost  Loss  Accuracy   Kappa 
@@ -629,7 +634,7 @@ load("svm_building_nodupli.Rdata")
 svm_building_nodupli_prediction <- predict(svm_building_nodupli,validation_v7)
 
 library(Metrics)
-accuracy(svm_building_nodupli_prediction , validation_v7$BUILDINGID) # 1
+accuracy(svm_building_nodupli_prediction , validation_v7$BUILDINGID) #1 !(0.9990999)!
 
 #### Q. Modelling FLOORINDEX ####
 ######## Q.1 Creating FLOORINDEX ####
@@ -652,7 +657,7 @@ class(training_sample_floorindex_v8) ### list
 training_c8_part_floorindex <- training_clean_v8[training_sample_floorindex_v8$Resample1,]
 dim(training_c8_part_floorindex) ## 1875  317
 dim(training_clean_v8) ## 18687   317
-colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildingID + floorindex
+colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildingID + floorindex + !(BuildingID_Pred)
 
 # prop.table(table(training_c8_part_floorindex$FLOORINDEX))
 # prop.table(table(training_clean_v8$FLOORINDEX))
@@ -660,12 +665,15 @@ colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildin
 
 ######## Q.3 Model // building + waps ####
 # with duplicates: best model: svm linear / accuracy 1 
-# set.seed(123)
-# svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-  #  data = training_c8_part_floorindex, method = "svmLinear", trControl = Cross_validation, preProcess= c("center","scale"))
+set.seed(123)
+# svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BuildingID_Pred, 
+ # data = training_c8_part_floorindex, 
+ # method = "svmLinear", 
+ # trControl = Cross_validation, 
+ # preProcess= c("center","scale"))
 
-# svmLinear_floorindex_waps_build_nodupli 
-### acc=   0.9711943  kappa = 0.9684839
+svmLinear_floorindex_waps_build_nodupli 
+### acc=  0.9722626 kappa = 0.9696572
 
 # save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
 load("svmLinear_floorindex_waps_build_nodupli .Rdata")
@@ -673,7 +681,7 @@ svmLinear_floorindex_waps_build_nodupli_prediction <- predict(svmLinear_floorind
 svmLinear_floorindex_waps_build_nodupli_prediction
 
 ## Accuracy 
-accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.9090909
+accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.8730873
 
 ######## Q.4 Including FLOORINDEX predictions - v9 ####
 training_clean_v9 <- training_clean_v8
@@ -695,13 +703,13 @@ colnames(training_c9_part_longitude) ## 312 waps + long + lat + floor + building
 
 ######## R.2 Model // BUILDING + waps ####
 ######## $ Knn - best ####
-# knn_longitude_nodupli <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX,
-  #                    data = training_c9_part_longitude,
-   #                method = "knn",     
-    #               preProcess=c("center", "scale"),        
-     #              trControl = Cross_validation)
+# knn_longitude_nodupli <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX - BuildingID_Pred,
+  #                  data = training_c9_part_longitude,
+   #             method = "knn",     
+    #           preProcess=c("center", "scale"),        
+     #         trControl = Cross_validation)
 
-# knn_longitude_nodupli #  k 5   RMSE   9.397362  Rsquared    0.9943213     MAE  5.934774
+ # knn_longitude_nodupli
                            
 # save(knn_longitude_nodupli, file="knn_longitude_nodupli.Rdata")
 load("knn_longitude_nodupli.Rdata")
@@ -709,16 +717,15 @@ knn_longitude_nodupli_prediction <- predict(knn_longitude_nodupli,validation_v9)
 knn_longitude_nodupli_prediction
 postResample(knn_longitude_nodupli_prediction,validation_v9$LONGITUDE)
 #       RMSE   Rsquared        MAE 
-#  17.170668   0.979887   8.520379 
-dim()
+#  14.9582638  0.9847949  7.7940947
 
 ######## R.3 Model // FLOORINDEX + waps ####
 ######## $ Knn        ####
-# knn_longitude_nodupli_floorindex <- train(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID,
-     #            data = training_c9_part_longitude,
-    #            method = "knn",     
-   #            preProcess=c("center", "scale"),        
-  #            trControl = Cross_validation)
+# knn_longitude_nodupli_floorindex <- train(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID - BuildingID_Pred,
+  #          data = training_c9_part_longitude,
+   #         method = "knn",     
+    #        preProcess=c("center", "scale"),        
+     #       trControl = Cross_validation)
 
 # knn_longitude_nodupli_floorindex 
 # save(knn_longitude_nodupli_floorindex, file="knn_longitude_nodupli_floorindex.Rdata")
@@ -727,10 +734,10 @@ knn_longitude_nodupli_floorindex_prediction <- predict(knn_longitude_nodupli_flo
 knn_longitude_nodupli_floorindex_prediction
 postResample(knn_longitude_nodupli_floorindex_prediction,validation_v9$LONGITUDE)
 #       RMSE   Rsquared        MAE 
-#  17.4331731  0.9793754  8.6967551 
+# 15.3323960  0.9841318  8.1420201 
 
 #### S. Modelling LATITUDE ####
-######## S.1 Creating training dataset for latutude ####
+######## S.1 Creating training dataset for latitude ####
 training_sample_lat_v9<-createDataPartition(y=training_clean_v9$LATITUDE,  p=0.10)
 class(training_sample_lat_v9) ### list 
 
@@ -742,10 +749,10 @@ colnames(training_c9_part_latitude) ## 312 waps + long + lat + floor + buildingI
 
 ######## S.2 Model // BUILDINGID + waps ####
 ######## $ KNN - best #### 
-# knn_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
-  # data = training_c9_part_latitude,
- # method = "knn", 
-# preProcess=c("center", "scale"),  
+# knn_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX - BuildingID_Pred,
+   # data = training_c9_part_latitude,
+  # method = "knn", 
+ # preProcess=c("center", "scale"),  
 # trControl = Cross_validation )
 
 # knn_latitude_nodupli #  k  5 RMSE 8.014935      Rsquared  0.9860376    MAE  5.135546
@@ -755,10 +762,10 @@ knn_latitude_nodupli_prediction <- predict(knn_latitude_nodupli,validation_v9)
 knn_latitude_nodupli_prediction 
 postResample(knn_latitude_nodupli_prediction,validation_v9$LATITUDE)
 #       RMSE   Rsquared        MAE 
-# 15.9535166  0.9486272   8.4783345 
+# 14.8530571  0.9553154  7.9601229 
 
 ######## $ SVM Linear ####
-# svmLinear_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+# svmLinear_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX - BuildingID_Pred,
   #                           data = training_c9_part_latitude,
    #                          method = "svmLinear", 
     #                         preProcess=c("center", "scale"),  
@@ -771,26 +778,26 @@ svmLinear_latitude_nodupli_prediction <- predict(svmLinear_latitude_nodupli,vali
 svmLinear_latitude_nodupli_prediction 
 postResample(svmLinear_latitude_nodupli_prediction,validation_v9$LATITUDE)
 #       RMSE   Rsquared        MAE 
-# 18.4417116  v0.9319652 13.6428134 
+# 18.793004    0.928766  13.231170 
 
 ######## S.2 Model // FLOORINDEX + waps ####
 ######## $ Knn        ####
-knn_latitude_nodupli_floorindex<- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
-       data = training_c9_part_latitude,
-       method = "knn", 
-       preProcess=c("center", "scale"),  
-       trControl = Cross_validation )
+# knn_latitude_nodupli_floorindex<- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+  #     data = training_c9_part_latitude,
+   #    method = "knn", 
+    #   preProcess=c("center", "scale"),  
+     #  trControl = Cross_validation )
 
-knn_latitude_nodupli_floorindex 
-save(knn_latitude_nodupli_floorindex , file="knn_latitude_nodupli_floorindex .Rdata")
+# knn_latitude_nodupli_floorindex 
+# save(knn_latitude_nodupli_floorindex , file="knn_latitude_nodupli_floorindex .Rdata")
 load("knn_latitude_nodupli_floorindex .Rdata")
 knn_latitude_nodupli_floorindex_prediction <- predict(knn_latitude_nodupli_floorindex,validation_v9)
 knn_latitude_nodupli_floorindex_prediction 
 postResample(knn_latitude_nodupli_floorindex_prediction,validation_v9$LATITUDE)
 #       RMSE   Rsquared        MAE 
-# 15.2888766  0.9530216  8.4852797 
+# 14.7222790  0.9561323  7.8914757  
 
-#### T. Modelling BUILDING based on latittude / longitude ####
+#### !!!!!!!!!! T. Modelling BUILDING based on latittude / longitude ####
 ######## T.1 Including LONG and LAT predictions - v10 ####
 training_clean_v10 <- training_clean_v9
 validation_v10 <- validation_v9
@@ -803,6 +810,7 @@ colnames(validation_v10)
 ######## T.2 Create a training set based on building ####
 training_sample_buildingid_10<-createDataPartition(y=training_clean_v10$BUILDINGID,  p=0.10)
 class(training_sample_buildingid_10) ### list 
+
 
 ## Training model (sample)
 training_c10_part_building <- training_clean_v10[training_sample_buildingid_10$Resample1,]
@@ -866,7 +874,7 @@ load("knn_building_nodupli_latit.Rdata")
 knn_building_nodupli_latit_prediction <- predict(knn_building_nodupli_latit,validation_v10)
 accuracy(knn_building_nodupli_latit_prediction , validation_v10$BUILDINGID) # 0.990099
 
-#### U. Modelling FLOORINDEX based on latittude / longitude ####
+#### !!!!!!!!!! U. Modelling FLOORINDEX based on latittude / longitude ####
 ######## U.1 Create a training set based on FLOORINDEX ####
 training_sample_floorindex_10<-createDataPartition(y=training_clean_v10$FLOORINDEX,  p=0.10)
 class(training_sample_floorindex_10) ### list 
@@ -931,22 +939,37 @@ load("knn_FLOORINDEX_nodupli_long.Rdata")
 knn_FLOORINDEX_nodupli_long_prediction <- predict(knn_FLOORINDEX_nodupli_long,validation_v10)
 accuracy(knn_FLOORINDEX_nodupli_long_prediction , validation_v10$FLOORINDEX) # 0.8136814
 
-#### V. Modelling FLOORINDEX based on predicted building and predicted latitute / longitude
+####  !!!!!!!!!! V. Modelling FLOORINDEX based on predicted building and predicted latitute / longitude
 ######## V.1 Including building prediction in validation dataset ####
 validation_v11 <- validation_v10
 validation_v11$BUILDINGID <- svm_building_nodupli_latit_prediction
 
 ######## V.2 Modelling // building (pred), waps, Long ####
-set.seed (123)
-svm_FLOORINDEX_nodupli_long_build <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BuildingID_Pred, 
-          data = training_c10_part_floorindex, 
-          method = "svmLinear3",  
-          preProcess = c("center", "scale"),
-          trControl = Cross_validation)
+# set.seed (123)
+# svm_FLOORINDEX_nodupli_long_build <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BuildingID_Pred, 
+  #        data = training_c10_part_floorindex, 
+   #       method = "svmLinear3",  
+    #      preProcess = c("center", "scale"),
+     #     trControl = Cross_validation)
 
-save(svm_FLOORINDEX_nodupli_long_build,file = "svm_FLOORINDEX_nodupli_long_build.Rdata")
+# save(svm_FLOORINDEX_nodupli_long_build,file = "svm_FLOORINDEX_nodupli_long_build.Rdata")
 load("svm_FLOORINDEX_nodupli_long_build.Rdata")
 svm_FLOORINDEX_nodupli_long_build_prediction <- predict(svm_FLOORINDEX_nodupli_long_build,validation_v11)
 accuracy(svm_FLOORINDEX_nodupli_long_build_prediction, validation_v11$FLOORINDEX) #  0.859586 ( vs 0.8613861 - sem building predicted)
 
+
+
+#### W. Modelling FLOORINDEX PER BUILDING DATASET ####
+######## W.1 Create separate datasets ####
+train_TC<-training_clean_v7 %>% filter(BUILDINGID=="TC")
+train_TI<-training_clean_v7 %>% filter(BUILDINGID=="TI")
+train_TD<-training_clean_v7 %>% filter(BUILDINGID=="TD")
+### C: TD building - 4848  317  (0.26) / TI building - 5241  317 (0.28) / TC building - 8598  317 (0.46)
+
+###### VALIDATION
+valid_TC<-validation_v7 %>% filter(BUILDINGID=="TC")
+valid_TI<-validation_v7 %>% filter(BUILDINGID=="TI")
+valid_TD<-validation_v7 %>% filter(BUILDINGID=="TD")
+### C: TC:  268 317  (0.24) / TI: 536 317 (0.48) / TD: 307 317 (0.28)
+### C: different distribution 
 
