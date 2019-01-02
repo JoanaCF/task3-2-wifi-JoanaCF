@@ -1246,11 +1246,11 @@ mean(abs((knn_longitude_4th_prediction-validation_v6$LONGITUDE)/validation_v6$LO
 ######### Y. Modelling LATITUDE  ####
 #### W.1 Models // WAPS          ####
 #### $ RF                        ####
-rf_latitude_waps<-randomForest::randomForest(LATITUDE ~. - FLOOR - LONGITUDE - FLOORINDEX - BUILDINGID,
-                                              data = training_longitude_train,
-                                              ntree=5,
-                                              tuneLength = 10, 
-                                              trControl = Cross_validation )
+# rf_latitude_waps<-randomForest::randomForest(LATITUDE ~. - FLOOR - LONGITUDE - FLOORINDEX - BUILDINGID,
+  #                                            data = training_longitude_train,
+   #                                           ntree=5,
+    #                                          tuneLength = 10, 
+     #                                         trControl = Cross_validation )
 
 # save(rf_latitude_waps, file="rf_latitude_WAPS.Rdata")
 load("rf_latitude_WAPS.Rdata")

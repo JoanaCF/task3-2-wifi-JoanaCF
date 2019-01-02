@@ -751,17 +751,17 @@ confusionMatrix(data=svmLinear_floor_waps_build_nodupli_prediction, validation_v
 
 ######## Q.5 Try to replicate best model to predict floorindex only with waps ####
 ######## $ SVM Linear - BEST ####
-set.seed(123)
-svmLinear_floorindex_onlywaps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
-                                                 data = training_c8_part_floorindex, 
-                                                 method = "svmLinear", 
-                                                 trControl = Cross_validation, 
-                                                 preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear_floorindex_onlywaps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID, 
+  #                                               data = training_c8_part_floorindex, 
+   #                                              method = "svmLinear", 
+    #                                             trControl = Cross_validation, 
+     #                                            preProcess= c("center","scale"))
 
-svmLinear_floorindex_onlywaps_build_nodupli
+# svmLinear_floorindex_onlywaps_build_nodupli
 ### acc= 0.9756407 kappa= 0.973347
 
-save(svmLinear_floorindex_onlywaps_build_nodupli ,file = "svmLinear_floorindex_onlywaps_build_nodupli.Rdata")
+# save(svmLinear_floorindex_onlywaps_build_nodupli ,file = "svmLinear_floorindex_onlywaps_build_nodupli.Rdata")
 load("svmLinear_floorindex_onlywaps_build_nodupli.Rdata")
 svmLinear_floorindex_onlywaps_build_nodupli_prediction <- predict(svmLinear_floorindex_onlywaps_build_nodupli,validation_v8) 
 
@@ -915,21 +915,20 @@ postResample(knn_longitude_nodupli_floorindex_prediction,validation_v9$LONGITUDE
 
 ######## $ RF         ####
 colnames(training_c9_part_longitude)
-rf_longitude_nodupli_nobuild <-  randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID,
-                                       data = training_c9_part_longitude, 
-                                      ntree=100,
-                                    tuneLength = 30, 
-                                    trControl = Cross_validation )
+# rf_longitude_nodupli_nobuild <-  randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE - BUILDINGID,
+  #                                     data = training_c9_part_longitude, 
+   #                                   ntree=100,
+    #                                tuneLength = 30, 
+     #                               trControl = Cross_validation )
 
-rf_longitude_nodupli_nobuild
-save(rf_longitude_nodupli_nobuild, file="rf_longitude_nodupli_nobuild.Rdata")
+# rf_longitude_nodupli_nobuild
+# save(rf_longitude_nodupli_nobuild, file="rf_longitude_nodupli_nobuild.Rdata")
 load("rf_longitude_nodupli_nobuild.Rdata")
 rf_longitude_nodupli_nobuild_prediction <- predict(rf_longitude_nodupli_nobuild,validation_v9)
 rf_longitude_nodupli_nobuild_prediction
 postResample(rf_longitude_nodupli_nobuild_prediction,validation_v9$LONGITUDE)
 #       RMSE   Rsquared        MAE 
 #  14.2590746  0.9861286  8.0959430 
-
 
 
 #### S. Modelling LATITUDE ####
@@ -964,11 +963,12 @@ postResample(knn_latitude_nodupli_prediction,validation_v9$LATITUDE)
 # 14.6317833  0.9569639  8.5144453 
 
 ######## $ SVM Linear ####
-# svmLinear_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX - BuildingID_Pred,
-  #                           data = training_c9_part_latitude,
-   #                          method = "svmLinear", 
-    #                         preProcess=c("center", "scale"),  
-     #                        trControl = Cross_validation )
+# set.seed(123)
+# svmLinear_latitude_nodupli<- train(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+  #                         data = training_c9_part_latitude,
+    #                      method = "svmLinear", 
+     #                    preProcess=c("center", "scale"),  
+      #                  trControl = Cross_validation )
 
 # svmLinear_latitude_nodupli
 # save(svmLinear_latitude_nodupli, file="knn_latitude_4th.Rdata")
@@ -977,11 +977,29 @@ svmLinear_latitude_nodupli_prediction <- predict(svmLinear_latitude_nodupli,vali
 svmLinear_latitude_nodupli_prediction 
 postResample(svmLinear_latitude_nodupli_prediction,validation_v9$LATITUDE)
 #       RMSE   Rsquared        MAE 
-# 18.793004    0.928766  13.231170 
+# 19.8727510  0.9233298 14.1724920 
+
+######## $ RF ####
+# set.seed(123)
+# rf_latitude_nodupli<- randomForest::randomForest(LATITUDE ~ . - FLOOR - LONGITUDE - FLOORINDEX,
+  #                 data = training_c9_part_latitude,
+   #                ntrees = 100,
+    #               tuneLength =40, 
+     #             trControl = Cross_validation)
+
+# rf_latitude_nodupli
+# save(rf_latitude_nodupli, file="rf_latitude_nodupli.Rdata")
+load("rf_latitude_nodupli.Rdata")
+rf_latitude_nodupli_prediction <- predict(rf_latitude_nodupli,validation_v9)
+rf_latitude_nodupli_prediction 
+postResample(rf_latitude_nodupli_prediction,validation_v9$LATITUDE)
+# RMSE   Rsquared        MAE 
+# 10.2222961  0.9798898  7.1050344 
+
 
 ######## S.2 Model // FLOORINDEX + waps ####
 ######## $ Knn        ####
-# knn_latitude_nodupli_floorindex<- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+# knn_latitude_nodupli_floorindex <- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
   #     data = training_c9_part_latitude,
    #    method = "knn", 
     #   preProcess=c("center", "scale"),  
@@ -996,180 +1014,351 @@ postResample(knn_latitude_nodupli_floorindex_prediction,validation_v9$LATITUDE)
 #       RMSE   Rsquared        MAE 
 # 14.7222790  0.9561323  7.8914757  
 
-#### !!!!!!!!!! T. Modelling BUILDING based on latittude / longitude ####
-######## T.1 Including LONG and LAT predictions - v10 ####
-training_clean_v10 <- training_clean_v9
-validation_v10 <- validation_v9
+######## $ SVM Linear ####
+# svm_latitude_nodupli_floorindex <- train(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+  # data = training_c9_part_latitude,
+   # method = "svmLinear", 
+   # preProcess=c("center", "scale"),  
+  # trControl = Cross_validation )
 
-validation_v10$LONGITUDE <- knn_longitude_nodupli_prediction
-validation_v10$LATITUDE <- knn_latitude_nodupli_prediction 
-
-colnames(validation_v10)
-
-######## T.2 Create a training set based on building ####
-training_sample_buildingid_10<-createDataPartition(y=training_clean_v10$BUILDINGID,  p=0.10)
-class(training_sample_buildingid_10) ### list 
-
-
-## Training model (sample)
-training_c10_part_building <- training_clean_v10[training_sample_buildingid_10$Resample1,]
-dim(training_c10_part_building) ## 1870  317
-dim(training_clean_v10) ## 18687   317
-colnames(training_c10_part_building) ## 312 waps + long + lat + floor + buildingID + floorindex
-
-######## T.3 Model // LONG + waps #### 
-######## $ Svm Linear 3 ####
-colnames(training_c10_part_building)
-
-# set.seed (123)
-# svm_building_nodupli_long <- train(BUILDINGID ~ . - LATITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
-# data = training_c10_part_building, 
-# method = "svmLinear3", 
-# preProcess = c("center", "scale"),
-# trControl = Cross_validation)
-
-# save(svm_building_nodupli_long,file = "svm_building_nodupli_long.Rdata")
-load("svm_building_nodupli_long.Rdata")
-svm_building_nodupli_long_prediction <- predict(svm_building_nodupli_long,validation_v10)
-accuracy(svm_building_nodupli_long_prediction , validation_v10$BUILDINGID) #  0.9972997
-
-######## $ Knn #####
-knn_building_nodupli_long <- train(BUILDINGID ~ . - LATITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
-                                   data = training_c10_part_building, 
-                                   method = "knn", 
-                                   preProcess = c("center", "scale"),
-                                   trControl = Cross_validation)
-
-save(knn_building_nodupli_long,file = "knn_building_nodupli_long.Rdata")
-load("knn_building_nodupli_long.Rdata")
-knn_building_nodupli_long_prediction <- predict(knn_building_nodupli_long,validation_v10)
-accuracy(knn_building_nodupli_long_prediction , validation_v10$BUILDINGID) # 0.9891989
+# svm_latitude_nodupli_floorindex
+# save(svm_latitude_nodupli_floorindex, file="svm_latitude_nodupli_floorindex.Rdata")
+load("svm_latitude_nodupli_floorindex.Rdata")
+svm_latitude_nodupli_floorindex_prediction <- predict(svm_latitude_nodupli_floorindex,validation_v9)
+svm_latitude_nodupli_floorindex_prediction 
+postResample(svm_latitude_nodupli_floorindex_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 19.0039959  0.9294503 13.6651296 
 
 
-######## T.3 Model // LATITUDE + waps #### 
-######## $ Svm Linear 3 ####
-# set.seed (123)
-# svm_building_nodupli_latit <- train(BUILDINGID ~ . - LONGITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
-  #                  data = training_c10_part_building, 
-   #     method = "svmLinear3", 
-    #                     preProcess = c("center", "scale"),
-     #                    trControl = Cross_validation)
-
-# save(svm_building_nodupli_latit,file = "svm_building_nodupli_latit.Rdata")
-load("svm_building_nodupli_latit.Rdata")
-svm_building_nodupli_latit_prediction <- predict(svm_building_nodupli_latit,validation_v10)
-accuracy(svm_building_nodupli_latit_prediction , validation_v10$BUILDINGID) # 0.9981998
-
-####### $ knn ####
-# set.seed (123)
-# knn_building_nodupli_latit <- train(BUILDINGID ~ . - LONGITUDE - FLOOR - FLOORINDEX - BuildingID_Pred, 
-  #               data = training_c10_part_building, 
-   #              method = "knn", 
-    #            preProcess = c("center", "scale"),
-     #           trControl = Cross_validation)
-
-# save(knn_building_nodupli_latit,file = "knn_building_nodupli_latit.Rdata")
-load("knn_building_nodupli_latit.Rdata")
-knn_building_nodupli_latit_prediction <- predict(knn_building_nodupli_latit,validation_v10)
-accuracy(knn_building_nodupli_latit_prediction , validation_v10$BUILDINGID) # 0.990099
-
-#### !!!!!!!!!! U. Modelling FLOORINDEX based on latittude / longitude ####
-######## U.1 Create a training set based on FLOORINDEX ####
-training_sample_floorindex_10<-createDataPartition(y=training_clean_v10$FLOORINDEX,  p=0.10)
-class(training_sample_floorindex_10) ### list 
-
-## Training model (sample)
-training_c10_part_floorindex <- training_clean_v10[training_sample_floorindex_10$Resample1,]
-dim(training_c10_part_floorindex ) ## 1875  318
-dim(training_clean_v10) ## 18687   318
-colnames(training_c10_part_floorindex ) ## 312 waps + long + lat + floor + buildingID + floorindex + BuildingID_PreD
-
-######## U.2 Model // LATITUDE + waps ####
-######## $ SVM LINEAR 3 ####
-# set.seed (123)
-# svm_FLOORINDEX_nodupli_latit <- train(FLOORINDEX ~ . - LONGITUDE - FLOOR - BUILDINGID - BuildingID_Pred, 
-  #                                  data = training_c10_part_floorindex, 
-   #                                 method = "svmLinear3", 
-    #                                preProcess = c("center", "scale"),
-     #                               trControl = Cross_validation)
-
-# save(svm_FLOORINDEX_nodupli_latit,file = "svm_FLOORINDEX_nodupli_latit.Rdata")
-load("svm_FLOORINDEX_nodupli_latit.Rdata")
-svm_FLOORINDEX_nodupli_latit_prediction <- predict(svm_FLOORINDEX_nodupli_latit,validation_v10)
-accuracy(svm_FLOORINDEX_nodupli_latit_prediction , validation_v10$FLOORINDEX) #0.8586859
-
-######## $ KNN ####
-# set.seed (123)
-# KNN_FLOORINDEX_nodupli_latit <- train(FLOORINDEX ~ . - LONGITUDE - FLOOR - BUILDINGID - BuildingID_Pred, 
-   #                                   data = training_c10_part_floorindex, 
-  #                                    method = "knn", 
-    #                                  preProcess = c("center", "scale"),
-     #                                 trControl = Cross_validation)
-
-# save(KNN_FLOORINDEX_nodupli_latit,file = "KNN_FLOORINDEX_nodupli_latit.Rdata")
-load("KNN_FLOORINDEX_nodupli_latit.Rdata")
-KNN_FLOORINDEX_nodupli_latit_prediction <- predict(KNN_FLOORINDEX_nodupli_latit,validation_v10)
-accuracy(KNN_FLOORINDEX_nodupli_latit_prediction , validation_v10$FLOORINDEX) #0.8154815
-
-######## U.3 Model // LONGITUDE + waps ####
-######## $ svm linear3 ####
-# set.seed (123)
-# svm_FLOORINDEX_nodupli_long <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BUILDINGID - BuildingID_Pred, 
-  #                                    data = training_c10_part_floorindex, 
-   #                                   method = "svmLinear3", 
-    #                                  preProcess = c("center", "scale"),
-     #                                 trControl = Cross_validation)
-
-# save(svm_FLOORINDEX_nodupli_long,file = "svm_FLOORINDEX_nodupli_long.Rdata")
-load("svm_FLOORINDEX_nodupli_long.Rdata")
-svm_FLOORINDEX_nodupli_long_prediction <- predict(svm_FLOORINDEX_nodupli_long,validation_v10)
-accuracy(svm_FLOORINDEX_nodupli_long_prediction , validation_v10$FLOORINDEX) # 0.8613861
-
-######## $ knn ####
-# set.seed (123)
-# knn_FLOORINDEX_nodupli_long <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BUILDINGID - BuildingID_Pred, 
-  #                               data = training_c10_part_floorindex, 
-   #                                method = "knn", 
-    #                              preProcess = c("center", "scale"),
-     #                            trControl = Cross_validation)
-
-# save(knn_FLOORINDEX_nodupli_long,file = "knn_FLOORINDEX_nodupli_long.Rdata")
-load("knn_FLOORINDEX_nodupli_long.Rdata")
-knn_FLOORINDEX_nodupli_long_prediction <- predict(knn_FLOORINDEX_nodupli_long,validation_v10)
-accuracy(knn_FLOORINDEX_nodupli_long_prediction , validation_v10$FLOORINDEX) # 0.8136814
-
-####  !!!!!!!!!! V. Modelling FLOORINDEX based on predicted building and predicted latitute / longitude
-######## V.1 Including building prediction in validation dataset ####
-validation_v11 <- validation_v10
-validation_v11$BUILDINGID <- svm_building_nodupli_latit_prediction
-
-######## V.2 Modelling // building (pred), waps, Long ####
-# set.seed (123)
-# svm_FLOORINDEX_nodupli_long_build <- train(FLOORINDEX ~ . - LATITUDE - FLOOR - BuildingID_Pred, 
-  #        data = training_c10_part_floorindex, 
-   #       method = "svmLinear3",  
-    #      preProcess = c("center", "scale"),
-     #     trControl = Cross_validation)
-
-# save(svm_FLOORINDEX_nodupli_long_build,file = "svm_FLOORINDEX_nodupli_long_build.Rdata")
-load("svm_FLOORINDEX_nodupli_long_build.Rdata")
-svm_FLOORINDEX_nodupli_long_build_prediction <- predict(svm_FLOORINDEX_nodupli_long_build,validation_v11)
-accuracy(svm_FLOORINDEX_nodupli_long_build_prediction, validation_v11$FLOORINDEX) #  0.859586 ( vs 0.8613861 - sem building predicted)
+######## $ RF         ####
+# set.seed(123)
+# rf_latitude_nodupli_nobuild<- randomForest::randomForest(LATITUDE ~ . - FLOOR - LONGITUDE - BUILDINGID,
+  #                                               data = training_c9_part_latitude,
+   #                                              ntrees = 100,
+    #                                             tuneLength =40, 
+     #                                            trControl = Cross_validation)
 
 
+# rf_latitude_nodupli_nobuild
+# save(rf_latitude_nodupli_nobuild, file="rf_latitude_nodupli_nobuild.Rdata")
+load("rf_latitude_nodupli_nobuild.Rdata")
+rf_latitude_nodupli_nobuild_prediction <- predict(rf_latitude_nodupli_nobuild,validation_v9)
+rf_latitude_nodupli_nobuild_prediction 
+postResample(rf_latitude_nodupli_nobuild_prediction,validation_v9$LATITUDE)
+# RMSE        Rsquared   MAE 
+# 12.4014429  0.9694561  7.5562525 
 
-#### W. Modelling FLOORINDEX PER BUILDING DATASET ####
-######## !!!!!!!!! W.1 Create separate datasets ####
-train_TC<-training_clean_v7 %>% filter(BUILDINGID=="TC")
-train_TI<-training_clean_v7 %>% filter(BUILDINGID=="TI")
-train_TD<-training_clean_v7 %>% filter(BUILDINGID=="TD")
+
+######## S.2 Model // BUILDING + FLOORINDEX + waps ####
+######## $ KNN #### 
+# set.seed(123)
+# knn_latitude_nodupli_build_floor<- train(LATITUDE ~ . - FLOOR - LONGITUDE,
+      # data = training_c9_part_latitude,
+      # method = "knn", 
+      # preProcess=c("center", "scale"),  
+      # trControl = Cross_validation )
+
+# knn_latitude_nodupli_build_floor
+
+# save(knn_latitude_nodupli_build_floor, file="knn_latitude_nodupli_build_floor.Rdata")
+load("knn_latitude_nodupli_build_floor.Rdata")
+knn_latitude_nodupli_build_floor_prediction <- predict(knn_latitude_nodupli_build_floor,validation_v9)
+knn_latitude_nodupli_build_floor_prediction 
+postResample(knn_latitude_nodupli_build_floor_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 14.0701450  0.9602915  8.4811411 
+
+######## $ SVM #### 
+# set.seed(123)
+# svm_latitude_nodupli_build_floor<- train(LATITUDE ~ . - FLOOR - LONGITUDE,
+  # data = training_c9_part_latitude,
+   # method = "knn", 
+    #  preProcess=c("center", "scale"),  
+     #   trControl = Cross_validation )
+
+# svm_latitude_nodupli_build_floor
+
+# save(svm_latitude_nodupli_build_floor, file="svm_latitude_nodupli_build_floor.Rdata")
+load("svm_latitude_nodupli_build_floor.Rdata")
+svm_latitude_nodupli_build_floor_prediction <- predict(svm_latitude_nodupli_build_floor,validation_v9)
+svm_latitude_nodupli_build_floor_prediction 
+postResample(svm_latitude_nodupli_build_floor_prediction,validation_v9$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 14.0701450  0.9602915  8.4811411  
+
+######## $ RF - BEST ####  
+# set.seed(123)
+# rf_latitude_nodupli_build_floor<- randomForest::randomForest(LATITUDE ~ . - FLOOR - LONGITUDE,
+      # data = training_c9_part_latitude,
+      #  ntree=80, 
+      #    tuneLength =30, 
+      # trControl = Cross_validation)
+
+# rf_latitude_nodupli_build_floor
+# save(rf_latitude_nodupli_build_floor, file="rf_latitude_nodupli_build_floor.Rdata")
+load("rf_latitude_nodupli_build_floor.Rdata")
+rf_latitude_nodupli_build_floor_prediction <- predict(rf_latitude_nodupli_build_floor,validation_v9)
+rf_latitude_nodupli_build_floor_prediction 
+postResample(rf_latitude_nodupli_build_floor_prediction,validation_v9$LATITUDE)
+# RMSE   Rsquared        MAE 
+# 10.7356416  0.9773162  7.0936005 
+
+
+#### T. Modelling FLOOR PER BUILDING DATASET ####
+######## T.1 Create separate datasets ####
+train_TC<-training_clean_v8 %>% filter(BUILDINGID=="TC")
+train_TI<-training_clean_v8 %>% filter(BUILDINGID=="TI")
+train_TD<-training_clean_v8 %>% filter(BUILDINGID=="TD")
 ### C: TD building - 4848  317  (0.26) / TI building - 5241  317 (0.28) / TC building - 8598  317 (0.46)
 
+train_TC$BuildingID_Pred <- NULL
+train_TI$BuildingID_Pred <- NULL
+train_TD$BuildingID_Pred <- NULL
+
+
 ###### VALIDATION
-valid_TC<-validation_v7 %>% filter(BUILDINGID=="TC")
-valid_TI<-validation_v7 %>% filter(BUILDINGID=="TI")
-valid_TD<-validation_v7 %>% filter(BUILDINGID=="TD")
+valid_TC<-validation_v8 %>% filter(BUILDINGID=="TC")
+valid_TI<-validation_v8 %>% filter(BUILDINGID=="TI")
+valid_TD<-validation_v8 %>% filter(BUILDINGID=="TD")
 ### C: TC:  268 317  (0.24) / TI: 536 317 (0.48) / TD: 307 317 (0.28)
 ### C: different distribution 
 
+valid_TC$BuildingID_Pred <- NULL
+valid_TI$BuildingID_Pred <- NULL
+valid_TD$BuildingID_Pred <- NULL
 
+######## T.2 Model FLOOR based on waps of different datasets #### 
+########### TC ####
+######## $ SVM 
+# svmLinear_floor_TC <- train(FLOOR ~. -LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                                                   data = train_TC, 
+   #                                                  method = "svmLinear", 
+    #                                                 trControl = Cross_validation)
+
+# svmLinear_floor_TC
+### acc= 0.9947273  kappa = 0.9931456
+
+# save(svmLinear_floor_TC,file = "svmLinear_floor_TC.Rdata")
+load("svmLinear_floor_TC.Rdata")
+svmLinear_floor_TC_prediction <- predict(svmLinear_floor_TC,valid_TC) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TC_prediction, valid_TC$FLOOR) ### 0.9328       
+confusionMatrix(data=svmLinear_floor_TC_prediction, valid_TC$FLOOR)
+
+########### TI ####
+######## $ SVM 
+hchart(train_TI$FLOOR)
+train_TI$FLOOR<-as.character(train_TI$FLOOR)
+train_TI$FLOOR <- as.factor(train_TI$FLOOR)
+levels(train_TI$FLOOR)
+
+valid_TI$FLOOR<-as.character(valid_TI$FLOOR)
+valid_TI$FLOOR<-as.factor(valid_TI$FLOOR)
+levels(valid_TI$FLOOR)
+
+
+# svmLinear_floor_TI <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                          data = train_TI, 
+   #                         method = "svmLinear", 
+    #                        trControl = Cross_validation)
+
+# svmLinear_floor_TI
+### acc= 0.9877885 kappa= 0.9836515
+
+# save(svmLinear_floor_TI,file = "svmLinear_floor_TI.Rdata")
+load("svmLinear_floor_TI.Rdata")
+svmLinear_floor_TI_prediction <- predict(svmLinear_floor_TI,valid_TI) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TI_prediction, valid_TI$FLOOR) ### 0.9478       
+confusionMatrix(data=svmLinear_floor_TI_prediction, valid_TI$FLOOR)
+
+
+########### TD ####
+######## $ SVM 
+hchart(train_TD$FLOOR)
+train_TD$FLOOR<-as.character(train_TD$FLOOR)
+train_TD$FLOOR <- as.factor(train_TD$FLOOR)
+levels(train_TD$FLOOR)
+
+valid_TD$FLOOR<-as.character(valid_TD$FLOOR)
+valid_TD$FLOOR<-as.factor(valid_TD$FLOOR)
+levels(valid_TD$FLOOR)
+
+
+# svmLinear_floor_TD <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                          data = train_TD, 
+   #                         method = "svmLinear", 
+    #                        trControl = Cross_validation)
+
+# svmLinear_floor_TD
+### acc= 0.9947745  kappa = 0.9929764
+
+# save(svmLinear_floor_TD,file = "svmLinear_floor_TD.Rdata")
+load("svmLinear_floor_TD.Rdata")
+svmLinear_floor_TD_prediction <- predict(svmLinear_floor_TD,valid_TD) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TD_prediction, valid_TD$FLOOR) ### 0.7915309       
+confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR)
+
+
+ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
+ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
+
+
+######## $ KNN 
+# knn_floor_TD <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                        data = train_TD, 
+   #                      method = "knn", 
+    #                    trControl = Cross_validation)
+
+knn_floor_TD
+### acc= 0.9947745  kappa = 0.9929764
+
+save(knn_floor_TD,file = "knn_floor_TD.Rdata")
+load("knn_floor_TD.Rdata")
+knn_floor_TD_prediction <- predict(knn_floor_TD,valid_TD) 
+
+## Accuracy 
+accuracy(knn_floor_TD_prediction, valid_TD$FLOOR) ### 0.7752         
+confusionMatrix(data=knn_floor_TD_prediction, valid_TD$FLOOR)
+
+ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
+ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
+
+
+######## T.3 Include FLOOR predictions in respective datasets ####
+valid_TC$FLOOR <- svmLinear_floor_TC_prediction
+valid_TD$FLOOR <- svmLinear_floor_TD_prediction
+valid_TI$FLOOR <- svmLinear_floor_TI_prediction
+######## T.4 Model LONGITUDE based on predicted floor and waps in the different datasets ####
+########### TC ####
+######## $ RF
+# colnames(train_TC)
+# set.seed(123)
+# rf_longitude_TC <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+  #                                      data = train_TC, 
+   #                                   ntree=100,
+    #                                tuneLength =20, 
+     #                             trControl = Cross_validation )
+
+# rf_longitude_TC
+# save(rf_longitude_TC, file="rf_longitude_TC.Rdata")
+load("rf_longitude_TC.Rdata")
+rf_longitude_TC_prediction <- predict(rf_longitude_TC,valid_TC)
+rf_longitude_TC_prediction
+postResample(rf_longitude_TC_prediction,valid_TC$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#  10.7037323  0.8870557  7.0089658 (70 trees and tune length 30)
+#  10.5724280  0.8896429  6.9497967 (100 trees and tune length 20)
+
+########### TI ####
+######## $ RF 
+# colnames(train_TI)
+# set.seed(123)
+# rf_longitude_TI <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+ #                                              data = train_TI, 
+  #                                             ntree=100,
+   #                                            tuneLength =20, 
+    #                                           trControl = Cross_validation )
+
+# rf_longitude_TI
+# save(rf_longitude_TI, file="rf_longitude_TI.Rdata")
+load("rf_longitude_TI.Rdata")
+rf_longitude_TI_prediction <- predict(rf_longitude_TI,valid_TI)
+rf_longitude_TI_prediction
+postResample(rf_longitude_TI_prediction,valid_TI$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#    7.0087619 0.9318441 4.6775261  (100 trees and tune length 20)
+
+
+
+# common datasets:
+# 11.2913706  0.9912916  7.4688997 
+
+########### TD ####
+######## $ RF 
+colnames(train_TD)
+set.seed(123)
+rf_longitude_TD <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+                                              data = train_TD, 
+                                             ntree=100,
+                                            tuneLength =20, 
+                                           trControl = Cross_validation )
+
+rf_longitude_TD
+save(rf_longitude_TD,file="rf_longitude_TD.Rdata")
+load("rf_longitude_TD.Rdata")
+rf_longitude_TD_prediction <- predict(rf_longitude_TD,valid_TD)
+rf_longitude_TD_prediction
+postResample(rf_longitude_TD_prediction,valid_TD$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#    10.2011955  0.9527722  7.1335756 (100 trees and tune length 20)
+
+# common datasets:
+# 11.2913706  0.9912916  7.4688997 
+
+######## T.5 Model LATITUDE based on predicted floor and waps in the different datasets ####
+########### TC ####
+######## $ RF 
+# colnames(train_TC)
+# set.seed(123)
+# rf_latitude_TC <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+  #                                    data = train_TC, 
+   #                                ntree=100,
+    #                            tuneLength =20, 
+      #                       trControl = Cross_validation )
+
+# rf_latitude_TC 
+# save(rf_latitude_TC, file="rf_latitude_TC.Rdata")
+load("rf_latitude_TC.Rdata")
+rf_latitude_TC_prediction <- predict(rf_latitude_TC,valid_TC)
+rf_latitude_TC_prediction
+postResample(rf_latitude_TC_prediction,valid_TC$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#    9.0957511 0.9019608 6.3635272 (100 trees and tune length 20)
+
+########### TI ####
+######## $ RF 
+# colnames(train_TI)
+# set.seed(123)
+# rf_latitude_TI <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+  #                                            data = train_TI, 
+   #                                           ntree=100,
+    #                                          tuneLength =20, 
+     #                                         trControl = Cross_validation )
+
+# rf_latitude_TI 
+# save(rf_latitude_TI, file="rf_latitude_TI.Rdata")
+load("rf_latitude_TI.Rdata")
+rf_latitude_TI_prediction <- predict(rf_latitude_TI,valid_TI)
+rf_latitude_TI_prediction
+postResample(rf_latitude_TI_prediction,valid_TI$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#    5.4395317 0.9716765 3.8059218  (100 trees and tune length 20)
+
+########### TD ####
+######## $ RF 
+# colnames(train_TD)
+# set.seed(123)
+# rf_latitude_TD <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+  #                                            data = train_TD, 
+   #                                           ntree=100,
+    #                                          tuneLength =20, 
+     #                                         trControl = Cross_validation )
+
+# rf_latitude_TD 
+# save(rf_latitude_TD, file="rf_latitude_TD.Rdata")
+load("rf_latitude_TI.Rdata")
+rf_latitude_TD_prediction <- predict(rf_latitude_TD,valid_TD)
+rf_latitude_TD_prediction
+postResample(rf_latitude_TD_prediction,valid_TD$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 10.6867520  0.9091881  7.4728915  (100 trees and tune length 20)
+
+## COMMON DATASET:
+# RMSE   Rsquared        MAE 
+# 10.7356416  0.9773162  7.0936005 
