@@ -631,6 +631,7 @@ svm_building_prediction_train <- predict(svm_building,training_clean_v3)
 
 library(Metrics)
 accuracy(svm_building_prediction, validation_v3$BUILDINGID)
+confusionMatrix(data=svm_building_prediction, validation_v3$BUILDINGID)
 ### C: 1
 
 #### $ SVMRadial                 ####
