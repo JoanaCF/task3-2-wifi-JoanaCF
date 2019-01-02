@@ -1524,3 +1524,4 @@ rf_latit_best_wap_prediction
 postResample(rf_latit_best_wap_prediction,validation_v8.1.2$LATITUDE)
 #       RMSE      Rsquared        MAE 
 #    18.8833196  0.9299748 10.2736053  (ntrees 10 / tuneLength 10)
+#    18.9522936  0.9291487 10.1900355  (ntrees 10 / tuneLength 10)

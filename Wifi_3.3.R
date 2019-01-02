@@ -1370,3 +1370,5 @@ ggplot(data=validation_v4.2, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wr
 ggplot(data=validation_v4, aes(x=LONGITUDE, y=LATITUDE))+geom_point()
 
 ## unfinished ##
+
+
