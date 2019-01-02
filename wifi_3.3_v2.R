@@ -616,7 +616,7 @@ Cross_validation <- trainControl(
   repeats = 3,
   allowParallel = TRUE)
 
-#### P. Modelling BUILDINGID ####
+#### P. 1ST APPROACH - Modelling BUILDINGID ####
 ######## $ Svm Linear 3 ####
 # with duplicates: best model: svm linear / accuracy 1 
 # set.seed (123)
@@ -1105,7 +1105,7 @@ postResample(rf_latitude_nodupli_build_floor_prediction,validation_v9$LATITUDE)
 # 10.7356416  0.9773162  7.0936005 
 
 
-#### T. Modelling FLOOR PER BUILDING DATASET ####
+#### T. 2ND APPROACH - Modelling FLOOR PER BUILDING DATASET ####
 ######## T.1 Create separate datasets ####
 train_TC<-training_clean_v8 %>% filter(BUILDINGID=="TC")
 train_TI<-training_clean_v8 %>% filter(BUILDINGID=="TI")
@@ -1362,3 +1362,165 @@ postResample(rf_latitude_TD_prediction,valid_TD$LATITUDE)
 ## COMMON DATASET:
 # RMSE   Rsquared        MAE 
 # 10.7356416  0.9773162  7.0936005 
+
+#### U. 3RD APPROACH - Including Best_wap ####
+########### Creating Best_wap and deleting waps 323 and 268 ####
+# TRAINING 
+# colnames(training_clean_v8)
+# dim(training_clean_v8) ## 18687   317
+training_clean_v8.1<-training_clean_v8
+training_clean_v8.1$Best_wap <- apply(training_clean_v8.1[,1:312],1,function(x)names(which.max(x)))
+training_clean_v8.1$Best_wap <-as.factor(training_clean_v8.1$Best_wap)
+# summary(training_clean_v8.1$Best_wap)
+# levels(training_clean_v8.1$Best_wap) ## 222
+
+# VALIDATION 
+# dim(validation_v8) ## 1111  318
+validation_v8$BuildingID_Pred <-NULL
+validation_v8.1 <- validation_v8 ## 1111  317
+
+validation_v8.1$Best_wap <- apply(validation_v8.1[,1:312],1,function(x)names(which.max(x)))
+validation_v8.1$Best_wap <-as.factor(validation_v8.1$Best_wap)
+# summary(validation_v8.1$Best_wap)
+# levels(validation_v8.1$Best_wap) ## 175 
+
+## REPEAT IT TAKING OUT wap 323 and WAP 268
+training_clean_v8.1$WAP323 <- NULL
+training_clean_v8.1$WAP268 <- NULL
+
+validation_v8.1$WAP323 <- NULL
+validation_v8.1$WAP268 <- NULL
+
+training_clean_v8.1$Best_wap <- apply(training_clean_v8.1[,1:310],1,function(x)names(which.max(x)))
+training_clean_v8.1$Best_wap <-as.factor(training_clean_v8.1$Best_wap)
+
+validation_v8.1$Best_wap <- apply(validation_v8.1[,1:310],1,function(x)names(which.max(x)))
+validation_v8.1$Best_wap <-as.factor(validation_v8.1$Best_wap)
+
+########### U.2 Model BuildingID ####
+########### U.2.1 Create dataset sample ####
+training_sample_build<-createDataPartition(y=training_clean_v8.1$BUILDINGID,  p=0.10)
+class(training_sample_build) ### list 
+
+## Training model (sample)
+training_sample_build_bestwap <- training_clean_v8.1[training_sample_build$Resample1,]
+dim(training_sample_build_bestwap) ## 1870  316
+dim(training_clean_v8.1) ## 18687   316
+colnames(training_sample_build_bestwap) # 310 waps + long + lat + floor + build + floprindex + best_wap
+
+
+########### $SVM ####
+# set.seed(123)
+# svm_build_best_wap <- train(BUILDINGID ~ Best_wap,
+  #                        data = training_sample_build_bestwap,
+   #                        method = "svmLinear", 
+      #                      preProcess=c("center", "scale"),  
+       #                     trControl = Cross_validation )
+
+# svm_build_best_wap
+# save(svm_build_best_wap, file="svm_build_best_wap.Rdata")
+load("svm_build_best_wap.Rdata")
+svm_build_best_wap_prediction <- predict(svm_build_best_wap,validation_v8.1)
+svm_build_best_wap_prediction 
+postResample(svm_build_best_wap_prediction,validation_v8.1$BUILDINGID) ## accuracy 0.9829 kappa  0.973   
+## ac - 0.9981998 kappa - 0.9971559  (with waps and best_wap and predicted building)
+confusionMatrix(data=svm_build_best_wap_prediction,validation_v8.1$BUILDINGID)
+
+########### U.2.1 Including prediction of building ####
+validation_v8.1.1 <- validation_v8.1
+validation_v8.1.1$BUILDINGID <- svm_build_best_wap_prediction
+summary(validation_v8.1.1$BUILDINGID)
+
+########### U.3 Model FLOORINDEX ####
+########### U.3.1 Create data sample ####
+training_sample_floorindex_best_wap<-createDataPartition(y=training_clean_v8.1$FLOORINDEX,  p=0.10)
+class(training_sample_floorindex_best_wap) ### list 
+
+## Training model (sample)
+training_sample_floorindex_bestwap <- training_clean_v8.1[training_sample_floorindex_best_wap$Resample1,]
+dim(training_sample_floorindex_bestwap) ## 1875  316
+dim(training_clean_v8.1) ## 18687   316
+colnames(training_sample_floorindex_bestwap) # 310 waps + long + lat + floor + build + floprindex + best_wap
+
+########### $SVM ####
+# set.seed(123)
+svm_floorindex_best_wap <- train(FLOORINDEX ~ Best_wap + BUILDINGID,
+                         data = training_sample_floorindex_bestwap,
+                         method = "svmLinear", 
+                        preProcess=c("center", "scale"),  
+                       trControl = Cross_validation )
+
+svm_floorindex_best_wap
+save(svm_floorindex_best_wap, file="svm_floorindex_best_wap.Rdata")
+load("svm_floorindex_best_wap.Rdata")
+svm_floorindex_best_wap_prediction <- predict(svm_floorindex_best_wap,validation_v8.1.1)
+svm_floorindex_best_wap_prediction
+postResample(svm_floorindex_best_wap_prediction,validation_v8.1.1$FLOORINDEX) ## accuracy 0.8713   / kappa 0.8555  
+## ac - 0.9001   kappa - 0.8883    (with waps and best_wap and predicted building)
+confusionMatrix(data=svm_floorindex_best_wap_prediction,validation_v8.1.1$FLOORINDEX)
+
+########### U.3.2 Including prediction of floorindex ####
+validation_v8.1.2 <- validation_v8.1.1
+validation_v8.1.2$FLOORINDEX <- svm_floorindex_best_wap_prediction
+summary(validation_v8.1.2$FLOORINDEX)
+
+
+
+########### U.4 Model LONGITUDE ####
+########### U.4.1 Create Data sample ####
+training_sample_long_best_wap<-createDataPartition(y=training_clean_v8.1$LONGITUDE,  p=0.10)
+class(training_sample_long_best_wap) ### list 
+
+## Training model (sample)
+training_sample_LONG_bestwap <- training_clean_v8.1[training_sample_long_best_wap$Resample1,]
+dim(training_sample_LONG_bestwap) ## 1871  316
+dim(training_clean_v8.1) ## 18687   316
+colnames(training_sample_LONG_bestwap) # 310 waps + long + lat + floor + build + floprindex + best_wap
+
+########### $RF ####
+# set.seed(123)
+# rf_longitude_best_wap <-  train(LONGITUDE ~ Best_wap + BUILDINGID + FLOORINDEX,
+  #                                     data = training_sample_LONG_bestwap, 
+   #                                    method="rf",
+    #                                   ntree=50,
+     #                                  tuneLength =10, 
+      #                                 trControl = Cross_validation )
+
+# rf_longitude_best_wap
+# save(rf_longitude_best_wap, file="rf_longitude_best_wap.Rdata")
+load("rf_longitude_best_wap.Rdata")
+rf_longitude_best_wap_prediction <- predict(rf_longitude_best_wap,validation_v8.1.2)
+rf_longitude_best_wap_prediction
+postResample(rf_longitude_best_wap_prediction,validation_v8.1.2$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#    26.72027   0.95114     12.38980 (ntrees 10 / tuneLength 10)
+#    26.1781929  0.9530235 12.2461255 (ntrees 50 / tuneLength 10)
+
+########### U.4 Model LATITUDE ####
+########### U.4.1 Create Data sample ####
+training_sample_LATIT_best_wap<-createDataPartition(y=training_clean_v8.1$LATITUDE,  p=0.10)
+class(training_sample_LATIT_best_wap) ### list 
+
+## Training model (sample)
+training_sample_LATIT_bestwap <- training_clean_v8.1[training_sample_LATIT_best_wap$Resample1,]
+dim(training_sample_LATIT_bestwap) ## 1871  316
+dim(training_clean_v8.1) ## 18687   316
+colnames(training_sample_LATIT_bestwap) # 310 waps + long + lat + floor + build + floprindex + best_wap
+
+########### RF ####
+set.seed(123)
+  rf_latit_best_wap <-  train(LATITUDE ~ Best_wap + BUILDINGID + FLOORINDEX,
+                                     data = training_sample_LATIT_bestwap, 
+                                    method="rf",
+                                   ntree=50,
+                                  tuneLength =10, 
+                                 trControl = Cross_validation )
+
+rf_latit_best_wap
+save(rf_latit_best_wap, file="rf_latit_best_wap.Rdata")
+load("rf_latit_best_wap.Rdata")
+rf_latit_best_wap_prediction <- predict(rf_latit_best_wap,validation_v8.1.2)
+rf_latit_best_wap_prediction
+postResample(rf_latit_best_wap_prediction,validation_v8.1.2$LATITUDE)
+#       RMSE      Rsquared        MAE 
+#    18.8833196  0.9299748 10.2736053  (ntrees 10 / tuneLength 10)
