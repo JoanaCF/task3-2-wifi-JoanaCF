@@ -601,3 +601,223 @@ confusionMatrix(data=svm_building_vf_prediction,validation_vf$BUILDINGID)
 
 # worse accuracy than withouth taking user6 observations 
 
+#### 2nd APPROACH - MODEL FLOORINDEX ####
+
+##### Create Floorindex ####
+training_vf$FLOORINDEX <- paste0(training_vf$BUILDINGID, training_vf$FLOOR)
+validation_vf$FLOORINDEX <- paste0(validation_vf$BUILDINGID, validation_vf$FLOOR)
+
+training_vf$FLOORINDEX <- as.factor(training_vf$FLOORINDEX)
+validation_vf$FLOORINDEX <- as.factor(validation_vf$FLOORINDEX)
+
+##### Create separate datasets based on building ####
+train_TC_vf <-training_vf %>% filter(BUILDINGID=="TC")
+train_TI_vf <-training_vf %>% filter(BUILDINGID=="TI")
+train_TD_vf <-training_vf %>% filter(BUILDINGID=="TD")
+
+valid_TC_vf <-validation_vf %>% filter(BUILDINGID=="TC")
+valid_TI_vf <-validation_vf %>% filter(BUILDINGID=="TI")
+valid_TD_vf <-validation_vf %>% filter(BUILDINGID=="TD")
+
+##### Model FLOORINDEX ####
+#### TC ####
+# svmLinear_floor_TC_vf <- train(FLOOR ~. -LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                                                 data = train_TC_vf , 
+   #                                               method = "svmLinear", 
+    #                                             trControl = Cross_validation)
+
+# svmLinear_floor_TC_vf 
+# save(svmLinear_floor_TC_vf,file = "svmLinear_floor_TC_vf.Rdata")
+load("svmLinear_floor_TC_vf.Rdata")
+svmLinear_floor_TC_vf_prediction <- predict(svmLinear_floor_TC_vf,valid_TC_vf) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TC_vf_prediction, valid_TC_vf$FLOOR) ### accuracy 0.8938  / kappa 0.8543      
+confusionMatrix(data=svmLinear_floor_TC_vf_prediction, valid_TC_vf$FLOOR)
+
+#### TD ####
+train_TD_vf$FLOORINDEX <-as.character(train_TD_vf$FLOORINDEX)
+train_TD_vf$FLOORINDEX <-as.factor(train_TD_vf$FLOORINDEX)
+levels(train_TD_vf$FLOORINDEX)
+
+train_TD_vf$FLOOR <-as.character(train_TD_vf$FLOOR)
+train_TD_vf$FLOOR <-as.factor(train_TD_vf$FLOOR)
+levels(train_TD_vf$FLOOR)
+
+valid_TD_vf$FLOORINDEX <-as.character(valid_TD_vf$FLOORINDEX)
+valid_TD_vf$FLOORINDEX <-as.factor(valid_TD_vf$FLOORINDEX)
+levels(train_TD_vf$FLOORINDEX)
+
+valid_TD_vf$FLOOR <-as.character(valid_TD_vf$FLOOR)
+valid_TD_vf$FLOOR <-as.factor(valid_TD_vf$FLOOR)
+levels(train_TD_vf$FLOOR)
+
+
+# svmLinear_floor_TD_vf <- train(FLOOR ~. -LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+    #                           data = train_TD_vf , 
+   #                            method = "svmLinear", 
+  #                             trControl = Cross_validation)
+
+# svmLinear_floor_TD_vf 
+# save(svmLinear_floor_TD_vf,file = "svmLinear_floor_TD_vf.Rdata")
+load("svmLinear_floor_TD_vf.Rdata")
+svmLinear_floor_TD_vf_prediction <- predict(svmLinear_floor_TD_vf,valid_TD_vf) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TD_vf_prediction, valid_TD_vf$FLOOR) ### accuracy 0.7993    / kappa 0.7121
+confusionMatrix(data=svmLinear_floor_TD_vf_prediction, valid_TD_vf$FLOOR)
+
+#### TI ####
+train_TI_vf$FLOORINDEX <-as.character(train_TI_vf$FLOORINDEX)
+train_TI_vf$FLOORINDEX <-as.factor(train_TI_vf$FLOORINDEX)
+levels(train_TI_vf$FLOORINDEX)
+
+train_TI_vf$FLOOR <-as.character(train_TI_vf$FLOOR)
+train_TI_vf$FLOOR <-as.factor(train_TI_vf$FLOOR)
+levels(train_TI_vf$FLOOR)
+
+valid_TI_vf$FLOORINDEX <-as.character(valid_TI_vf$FLOORINDEX)
+valid_TI_vf$FLOORINDEX <-as.factor(valid_TI_vf$FLOORINDEX)
+levels(train_TI_vf$FLOORINDEX)
+
+valid_TI_vf$FLOOR <-as.character(valid_TI_vf$FLOOR)
+valid_TI_vf$FLOOR <-as.factor(valid_TI_vf$FLOOR)
+levels(train_TI_vf$FLOOR)
+
+
+# svmLinear_floor_TI_vf <- train(FLOOR ~. -LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
+  #                             data = train_TI_vf , 
+   #                            method = "svmLinear", 
+    #                           trControl = Cross_validation)
+
+# svmLinear_floor_TI_vf 
+# save(svmLinear_floor_TI_vf,file = "svmLinear_floor_TI_vf.Rdata")
+load("svmLinear_floor_TI_vf.Rdata")
+svmLinear_floor_TI_vf_prediction <- predict(svmLinear_floor_TI_vf,valid_TI_vf) 
+
+## Accuracy 
+accuracy(svmLinear_floor_TI_vf_prediction, valid_TI_vf$FLOOR) ### accuracy 0.9494 / kappa 0.9288 
+confusionMatrix(data=svmLinear_floor_TI_vf_prediction, valid_TI_vf$FLOOR)
+
+
+######## Include FLOOR predictions in respective datasets ####
+valid_TC_vf$FLOOR <- svmLinear_floor_TC_vf_prediction
+valid_TD_vf$FLOOR <- svmLinear_floor_TD_vf_prediction
+valid_TI_vf$FLOOR <- svmLinear_floor_TI_vf_prediction
+######## Q. Model LONGITUDE based on predicted floor and waps in the different datasets ####
+#### TC ####
+# colnames(train_TC_vf)
+# set.seed(123)
+# rf_longitude_TC_vf <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+  #                                   data = train_TC_vf, 
+   #                                ntree=100,
+    #                            tuneLength =20, 
+     #                        trControl = Cross_validation )
+
+# rf_longitude_TC_vf 
+# save(rf_longitude_TC_vf, file="rf_longitude_TC_vf.Rdata")
+load("rf_longitude_TC_vf.Rdata")
+rf_longitude_TC_vf_prediction <- predict(rf_longitude_TC_vf,valid_TC_vf)
+rf_longitude_TC_vf_prediction
+postResample(rf_longitude_TC_vf_prediction,valid_TC_vf$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#  10.7037323  0.8870557  7.0089658 (70 trees and tune length 30) - with user6
+#  10.5724280  0.8896429  6.9497967 (100 trees and tune length 20) - with user6 
+#  20.2320889  0.7182912  9.7414582 (100 trees and tune length 20) - without 
+
+#### TI ####
+colnames(train_TI_vf)
+set.seed(123)
+ rf_longitude_TI_vf <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+                                   data = train_TI_vf, 
+                               ntree=100,
+                            tuneLength =20, 
+                        trControl = Cross_validation )
+
+rf_longitude_TI_vf 
+save(rf_longitude_TI_vf, file="rf_longitude_TI_vf.Rdata")
+load("rf_longitude_TI_vf.Rdata")
+rf_longitude_TI_vf_prediction <- predict(rf_longitude_TI_vf,valid_TI_vf)
+rf_longitude_TI_vf_prediction
+postResample(rf_longitude_TI_vf_prediction,valid_TI_vf$LONGITUDE)
+#       RMSE   Rsquared        MAE 
+#    7.0087619 0.9318441 4.6775261  (100 trees and tune length 20) - with user 6 
+#    6.4643004 0.9421383 4.5272628 (100 trees and tune length 20) - without user 6 
+
+#### TD #### 
+# colnames(train_TD_vf)
+# set.seed(123)
+# rf_longitude_TD_vf <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+#                                data = train_TD_vf, 
+#                           ntree=100,
+#                       tuneLength =20, 
+#                  trControl = Cross_validation )
+
+# rf_longitude_TD_vf 
+# save(rf_longitude_TD_vf, file="rf_longitude_TD_vf.Rdata")
+load("rf_longitude_TD_vf.Rdata")
+rf_longitude_TD_vf_prediction <- predict(rf_longitude_TD_vf,valid_TD_vf)
+rf_longitude_TD_vf_prediction
+postResample(rf_longitude_TD_vf_prediction,valid_TD_vf$LONGITUDE)
+##       RMSE   Rsquared        MAE 
+#    10.2011955  0.9527722  7.1335756 (100 trees and tune length 20) - with user6
+#   12.2885364  0.9337247  7.5588625 (100 trees and tune length 20) - without user6
+
+
+
+######## Q. Model LATITUDE based on predicted floor and waps in the different datasets ####
+#### TC ####
+# colnames(train_TC_vf)
+# set.seed(123)
+# rf_latitude_TC_vf <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+ #                                  data = train_TC_vf, 
+  #                              ntree=100,
+   #                         tuneLength =20, 
+    #                    trControl = Cross_validation )
+
+# rf_latitude_TC_vf
+# save(rf_latitude_TC_vf, file="rf_latitude_TC_vf.Rdata")
+load("rf_latitude_TC_vf.Rdata")
+rf_latitude_TC_vf_prediction <- predict(rf_latitude_TC_vf,valid_TC_vf)
+rf_latitude_TC_vf_prediction
+postResample(rf_latitude_TC_vf_prediction,valid_TC_vf$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#    9.0957511 0.9019608 6.3635272 (100 trees and tune length 20) - WITH user6 
+#   12.526265  0.812248  7.659067 (100 trees and tune length 20) - WITHout user6 
+#### TI ####
+# colnames(train_TI_vf)
+# set.seed(123)
+# rf_latitude_TI_vf <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+  #                                               data = train_TI_vf, 
+   #                                              ntree=100,
+    #                                             tuneLength =20, 
+     #                                            trControl = Cross_validation )
+
+# rf_latitude_TI_vf
+# save(rf_latitude_TI_vf, file="rf_latitude_TI_vf.Rdata")
+load("rf_latitude_TC_vf.Rdata")
+rf_latitude_TI_vf_prediction <- predict(rf_latitude_TI_vf,valid_TI_vf)
+rf_latitude_TI_vf_prediction
+postResample(rf_latitude_TI_vf_prediction,valid_TI_vf$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#    5.4395317 0.9716765 3.8059218  (100 trees and tune length 20) - with user6
+#    5.4202764 0.9719225 3.7862496  (100 trees and tune length 20) - without user6
+#### TD ####
+# colnames(train_TD_vf)
+# set.seed(123)
+# rf_latitude_TD_vf <-  randomForest::randomForest(LATITUDE ~ . - LONGITUDE - BUILDINGID - FLOORINDEX,
+  #                                               data = train_TD_vf, 
+   #                                              ntree=100,
+    #                                             tuneLength =20, 
+     #                                            trControl = Cross_validation )
+
+# rf_latitude_TD_vf
+# save(rf_latitude_TD_vf, file="rf_latitude_TD_vf.Rdata")
+load("rf_latitude_TD_vf.Rdata")
+rf_latitude_TD_vf_prediction <- predict(rf_latitude_TD_vf,valid_TD_vf)
+rf_latitude_TD_vf_prediction
+postResample(rf_latitude_TD_vf_prediction,valid_TD_vf$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#       RMSE   Rsquared        MAE 
+# 10.6867520  0.9091881  7.4728915  (100 trees and tune length 20) - with user6 
+# 13.356380  0.864081  8.014365     (100 trees and tune length 20) - without user6
