@@ -770,15 +770,14 @@ accuracy(svmLinear_floorindex_onlywaps_build_nodupli_prediction, validation_v8$F
 confusionMatrix(data=svmLinear_floorindex_onlywaps_build_nodupli_prediction, validation_v8$FLOORINDEX)
 
 ######## $ KNN ####
-set.seed(123)
-knn_floorindex_onlywaps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID,
-                                     data = training_c8_part_floorindex, 
-                                        method = "knn", 
-                                       trControl = Cross_validation, 
-                                      preProcess= c("center","scale"))
+# knn_floorindex_onlywaps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR - BUILDINGID,
+  #                                   data = training_c8_part_floorindex, 
+   #                                     method = "knn", 
+    #                                   trControl = Cross_validation, 
+     #                                 preProcess= c("center","scale"))
 
 
-knn_floorindex_onlywaps_build_nodupli
+# knn_floorindex_onlywaps_build_nodupli
 ### acc= 0.9196429  kappa 0.9120693
 
 # save(knn_floorindex_onlywaps_build_nodupli,file = "knn_floorindex_onlywaps_build_nodupli.Rdata")
@@ -863,7 +862,7 @@ postResample(rf_longitude_nodupli_prediction,validation_v9$LONGITUDE)
 #  11.2913706  0.9912916  7.4688997 
 
 ######## R.3 Model // BUILDING + waps ####
-######## $ Knn ####
+######## $ Knn        ####
 # knn_longitude_nodupli_nofloorindex <- train(LONGITUDE ~ . - FLOOR - LATITUDE - FLOORINDEX,
   #              data = training_c9_part_longitude,
    #       method = "knn",     
@@ -880,7 +879,7 @@ postResample(knn_longitude_nodupli_nofloorindex_prediction,validation_v9$LONGITU
 #       RMSE   Rsquared        MAE 
 #  17.0409814  0.9804115  9.0524824 
 
-######## $ RF ####
+######## $ RF         ####
 # rf_longitude_nodupli_nofloorindex <-  randomForest::randomForest(LONGITUDE ~ . - FLOOR - LATITUDE,
   #                                       data = training_c9_part_longitude, 
    #                                      ntree=70,
@@ -1281,16 +1280,16 @@ postResample(rf_longitude_TI_prediction,valid_TI$LONGITUDE)
 
 ########### TD ####
 ######## $ RF 
-colnames(train_TD)
-set.seed(123)
-rf_longitude_TD <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
-                                              data = train_TD, 
-                                             ntree=100,
-                                            tuneLength =20, 
-                                           trControl = Cross_validation )
+# colnames(train_TD)
+# set.seed(123)
+# rf_longitude_TD <-  randomForest::randomForest(LONGITUDE ~ . - LATITUDE - BUILDINGID - FLOORINDEX,
+  #                                            data = train_TD, 
+   #                                          ntree=100,
+    #                                        tuneLength =20, 
+     #                                      trControl = Cross_validation )
 
-rf_longitude_TD
-save(rf_longitude_TD,file="rf_longitude_TD.Rdata")
+# rf_longitude_TD
+# save(rf_longitude_TD,file="rf_longitude_TD.Rdata")
 load("rf_longitude_TD.Rdata")
 rf_longitude_TD_prediction <- predict(rf_longitude_TD,valid_TD)
 rf_longitude_TD_prediction
@@ -1508,16 +1507,16 @@ dim(training_clean_v8.1) ## 18687   316
 colnames(training_sample_LATIT_bestwap) # 310 waps + long + lat + floor + build + floprindex + best_wap
 
 ########### RF ####
-set.seed(123)
-  rf_latit_best_wap <-  train(LATITUDE ~ Best_wap + BUILDINGID + FLOORINDEX,
-                                     data = training_sample_LATIT_bestwap, 
-                                    method="rf",
-                                   ntree=50,
-                                  tuneLength =10, 
-                                 trControl = Cross_validation )
+# set.seed(123)
+  # rf_latit_best_wap <-  train(LATITUDE ~ Best_wap + BUILDINGID + FLOORINDEX,
+    #                                 data = training_sample_LATIT_bestwap, 
+     #                               method="rf",
+      #                             ntree=50,
+       #                           tuneLength =10, 
+        #                         trControl = Cross_validation )
 
-rf_latit_best_wap
-save(rf_latit_best_wap, file="rf_latit_best_wap.Rdata")
+# rf_latit_best_wap
+# save(rf_latit_best_wap, file="rf_latit_best_wap.Rdata")
 load("rf_latit_best_wap.Rdata")
 rf_latit_best_wap_prediction <- predict(rf_latit_best_wap,validation_v8.1.2)
 rf_latit_best_wap_prediction
@@ -1525,3 +1524,9 @@ postResample(rf_latit_best_wap_prediction,validation_v8.1.2$LATITUDE)
 #       RMSE      Rsquared        MAE 
 #    18.8833196  0.9299748 10.2736053  (ntrees 10 / tuneLength 10)
 #    18.9522936  0.9291487 10.1900355  (ntrees 10 / tuneLength 10)
+
+##### V. Error analysis #### 
+########### FLOOR ####
+confusionMatrix(data=svmLinear_floor_TC_prediction, valid_TC$FLOOR) # 1
+confusionMatrix(data=svmLinear_floor_TI_prediction, valid_TI$FLOOR) # 1
+confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR) # 1
