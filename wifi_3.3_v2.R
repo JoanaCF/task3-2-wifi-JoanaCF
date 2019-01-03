@@ -668,24 +668,23 @@ colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildin
 
 ######## Q.3 Model // building + waps ####
 ######## $ Svm Linear ####
-set.seed(123)
-svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-data = training_c8_part_floorindex, 
- method = "svmLinear", 
-trControl = Cross_validation, 
- preProcess= c("center","scale"))
+# set.seed(123)
+# svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+# data = training_c8_part_floorindex, 
+# method = "svmLinear", 
+# trControl = Cross_validation, 
+# preProcess= c("center","scale"))
 
-svmLinear_floorindex_waps_build_nodupli
+# svmLinear_floorindex_waps_build_nodupli
 ### acc= 0.9763515  kappa = 0.9741264
 
-save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
+# save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
 load("svmLinear_floorindex_waps_build_nodupli .Rdata")
 svmLinear_floorindex_waps_build_nodupli_prediction <- predict(svmLinear_floorindex_waps_build_nodupli,validation_v8) 
 
 ## Accuracy 
 accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.8749     
 confusionMatrix(data=svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX)
-
 ### C: SVM linear 3 (accuracy of 84%)
 
 ######## $ RF ####
@@ -1204,8 +1203,8 @@ accuracy(svmLinear_floor_TD_prediction, valid_TD$FLOOR) ### 0.7915309
 confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR)
 
 
-ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
-ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
+# ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
+# ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
 
 
 ######## $ KNN 
@@ -1214,7 +1213,7 @@ ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~
    #                      method = "knn", 
     #                    trControl = Cross_validation)
 
-knn_floor_TD
+# knn_floor_TD
 ### acc= 0.9947745  kappa = 0.9929764
 
 save(knn_floor_TD,file = "knn_floor_TD.Rdata")
@@ -1229,10 +1228,12 @@ ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~
 ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
 
 
-######## T.3 Include FLOOR predictions in respective datasets ####
-valid_TC$FLOOR <- svmLinear_floor_TC_prediction
-valid_TD$FLOOR <- svmLinear_floor_TD_prediction
-valid_TI$FLOOR <- svmLinear_floor_TI_prediction
+
+
+######## T.3 Include FLOOR predictions in respective datasets - INACTIVE ####
+# valid_TC$FLOOR <- svmLinear_floor_TC_prediction
+# valid_TD$FLOOR <- svmLinear_floor_TD_prediction
+# valid_TI$FLOOR <- svmLinear_floor_TI_prediction
 ######## T.4 Model LONGITUDE based on predicted floor and waps in the different datasets ####
 ########### TC ####
 ######## $ RF
