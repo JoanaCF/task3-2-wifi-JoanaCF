@@ -1145,6 +1145,38 @@ svmLinear_floor_TC_prediction <- predict(svmLinear_floor_TC,valid_TC)
 accuracy(svmLinear_floor_TC_prediction, valid_TC$FLOOR) ### 0.9328       
 confusionMatrix(data=svmLinear_floor_TC_prediction, valid_TC$FLOOR)
 
+########### $ error analysis - !!!!!!! RERUN THIS ####
+# create the error variable
+valid_TC_e <- valid_TC
+valid_TC_e$FLOOR_pred <- svmLinear_floor_TC_prediction
+valid_TC_e$FLOOR_pred <- as.integer(valid_TC_e$FLOOR_pred)
+valid_TC_e$FLOOR <- as.integer(valid_TC_e$FLOOR)
+valid_TC_e$FLOOR_error <- valid_TC_e$FLOOR_pred-valid_TC_e$FLOOR
+head(valid_TC_e$FLOOR_error)
+summary(valid_TC_e$FLOOR_error) ## from  -3 and 2
+
+# separate errors 
+valid_TC_e %>% filter(FLOOR_error != 0) ### 64 
+valid_TC_errors <- valid_TC_e %>% filter(FLOOR_error != 0)
+colnames(valid_TC_errors)
+# summary(valid_TC_errors$FLOOR_error)
+# hchart(valid_TC_errors$FLOOR_error)
+
+# ggplot(train_TC, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(train_TC$FLOOR)
+# ggplot(valid_TC_errors, aes(x=LONGITUDE, y=LATITUDE))+
+ #                             geom_point(aes(color=ifelse(FLOOR_error == "-1", "-1",
+  #                                ifelse(FLOOR_error == 1, "1",
+   #                                ifelse(FLOOR_error == 2, "2",
+    #                                ifelse(FLOOR_error == "-2", "-2",
+     #                                ifelse(FLOOR_error == "-3", "-3","other"))))))) +
+      #                   scale_color_manual(values = c("1"= "red",
+       #                         "2"="blue",
+        #                        "-1"="orange",
+         #                       "-2" = "purple", 
+          #                      "-3" = "pink",
+           #                     "other" = "green"),
+            #                    name="Floor difference predictions")+facet_wrap(valid_TC_errors$FLOOR)
+
 ########### TI ####
 ######## $ SVM 
 hchart(train_TI$FLOOR)
@@ -1173,6 +1205,33 @@ svmLinear_floor_TI_prediction <- predict(svmLinear_floor_TI,valid_TI)
 accuracy(svmLinear_floor_TI_prediction, valid_TI$FLOOR) ### 0.9478       
 confusionMatrix(data=svmLinear_floor_TI_prediction, valid_TI$FLOOR)
 
+########### $ error analysis ####
+# create the error variable
+valid_TI_e <- valid_TI
+valid_TI_e$FLOOR_pred <- svmLinear_floor_TI_prediction
+valid_TI_e$FLOOR_pred <- as.integer(valid_TI_e$FLOOR_pred)
+valid_TI_e$FLOOR <- as.integer(valid_TI_e$FLOOR)
+valid_TI_e$FLOOR_error <- valid_TI_e$FLOOR_pred-valid_TI_e$FLOOR
+# head(valid_TI_e$FLOOR_error)
+# summary(valid_TI_e$FLOOR_error) ## from  -1 and 1
+
+# separate errors 
+valid_TI_e %>% filter(FLOOR_error != 0) ### 64 
+valid_TI_errors <- valid_TI_e %>% filter(FLOOR_error != 0)
+colnames(valid_TI_errors)
+# summary(valid_TI_errors$FLOOR_error)
+# hchart(valid_TI_errors$FLOOR_error)
+
+
+# ggplot(train_TI, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(train_TI$FLOOR)
+
+
+# ggplot(valid_TI_errors, aes(x=LONGITUDE, y=LATITUDE))+geom_point(aes(color=ifelse(FLOOR_error == 0, "correct",
+#                                                                                ifelse(FLOOR_error == 1, "1","-1"))))+ 
+#   scale_color_manual(values = c("1"= "red",
+  #                              "2"="blue",
+   #                             "-1"="orange"),
+    #                            name="Floor difference predictions")+facet_wrap(valid_TI_errors$FLOOR)
 
 ########### TD ####
 ######## $ SVM 
@@ -1184,7 +1243,6 @@ levels(train_TD$FLOOR)
 valid_TD$FLOOR<-as.character(valid_TD$FLOOR)
 valid_TD$FLOOR<-as.factor(valid_TD$FLOOR)
 levels(valid_TD$FLOOR)
-
 
 # svmLinear_floor_TD <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
   #                          data = train_TD, 
@@ -1202,16 +1260,11 @@ svmLinear_floor_TD_prediction <- predict(svmLinear_floor_TD,valid_TD)
 accuracy(svmLinear_floor_TD_prediction, valid_TD$FLOOR) ### 0.7915309       
 confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR)
 
-
-# ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
-# ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
-
-
 ######## $ KNN 
 # knn_floor_TD <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
-  #                        data = train_TD, 
-   #                      method = "knn", 
-    #                    trControl = Cross_validation)
+#                        data = train_TD, 
+#                      method = "knn", 
+#                    trControl = Cross_validation)
 
 # knn_floor_TD
 ### acc= 0.9947745  kappa = 0.9929764
@@ -1224,16 +1277,47 @@ knn_floor_TD_prediction <- predict(knn_floor_TD,valid_TD)
 accuracy(knn_floor_TD_prediction, valid_TD$FLOOR) ### 0.7752         
 confusionMatrix(data=knn_floor_TD_prediction, valid_TD$FLOOR)
 
-ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ train_TD$FLOOR)
-ggplot(data=valid_TD, aes(x=LONGITUDE, y=LATITUDE)) + geom_point()+ facet_wrap(~ valid_TD$FLOOR)
+########### $ error analysis ####
+# create the error variable
+train_TD_e <- train_TD
+valid_TD_e <- valid_TD
+valid_TD_e$FLOOR_pred <- svmLinear_floor_TD_prediction
+valid_TD_e$FLOOR_pred <- as.integer(valid_TD_e$FLOOR_pred)
+valid_TD_e$FLOOR <- as.integer(valid_TD_e$FLOOR)
+valid_TD_e$FLOOR_error <- valid_TD_e$FLOOR_pred-valid_TD_e$FLOOR
+# head(valid_TD_e$FLOOR_error)
+# summary(valid_TD_e$FLOOR_error) # from -1 to 2
+
+# separate errors 
+valid_TD_e %>% filter(FLOOR_error != 0) ### 64 
+valid_TD_errors <- valid_TD_e %>% filter(FLOOR_error != 0)
+colnames(valid_TD_errors)
+# summary(valid_TD_errors$FLOOR_error)
+# hchart(valid_TD_errors$FLOOR_error)
+
+# plot
+# ggplot(train_TD, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(train_TD$FLOOR)
+
+
+# ggplot(valid_TD_errors, aes(x=LONGITUDE, y=LATITUDE))+geom_point(aes(color=ifelse(FLOOR_error == 0, "correct",
+ #                                                                                 ifelse(FLOOR_error == 1, "1",
+  #                                                                                    ifelse(FLOOR_error == "-1","-1",
+   #                                                                                          ifelse(FLOOR_error == 2, "2",
+    #                                                                                                ifelse(FLOOR_error == "-2", "-2", 
+     #                                                                                                      "Other")))))))+ 
+      #                                                             scale_color_manual(values = c("1"= "red","2"="blue",
+       #                                                                                          "-1"="orange",
+        #                                                                                         "-2"="purple",
+         #                                                                                        "Other"="yellow"), 
+          #                                                                            name="Floor difference predictions")+facet_wrap(valid_TD_errors$FLOOR)
 
 
 
 
-######## T.3 Include FLOOR predictions in respective datasets - INACTIVE ####
-# valid_TC$FLOOR <- svmLinear_floor_TC_prediction
-# valid_TD$FLOOR <- svmLinear_floor_TD_prediction
-# valid_TI$FLOOR <- svmLinear_floor_TI_prediction
+######## T.3 Include FLOOR predictions in respective datasets ####
+valid_TC$FLOOR <- svmLinear_floor_TC_prediction
+valid_TD$FLOOR <- svmLinear_floor_TD_prediction
+valid_TI$FLOOR <- svmLinear_floor_TI_prediction
 ######## T.4 Model LONGITUDE based on predicted floor and waps in the different datasets ####
 ########### TC ####
 ######## $ RF
@@ -1444,14 +1528,14 @@ colnames(training_sample_floorindex_bestwap) # 310 waps + long + lat + floor + b
 
 ########### $SVM ####
 # set.seed(123)
-svm_floorindex_best_wap <- train(FLOORINDEX ~ Best_wap + BUILDINGID,
-                         data = training_sample_floorindex_bestwap,
-                         method = "svmLinear", 
-                        preProcess=c("center", "scale"),  
-                       trControl = Cross_validation )
+# svm_floorindex_best_wap <- train(FLOORINDEX ~ Best_wap + BUILDINGID,
+  #                       data = training_sample_floorindex_bestwap,
+   #                      method = "svmLinear", 
+    #                    preProcess=c("center", "scale"),  
+     #                  trControl = Cross_validation )
 
-svm_floorindex_best_wap
-save(svm_floorindex_best_wap, file="svm_floorindex_best_wap.Rdata")
+# svm_floorindex_best_wap
+# save(svm_floorindex_best_wap, file="svm_floorindex_best_wap.Rdata")
 load("svm_floorindex_best_wap.Rdata")
 svm_floorindex_best_wap_prediction <- predict(svm_floorindex_best_wap,validation_v8.1.1)
 svm_floorindex_best_wap_prediction
@@ -1527,7 +1611,42 @@ postResample(rf_latit_best_wap_prediction,validation_v8.1.2$LATITUDE)
 #    18.9522936  0.9291487 10.1900355  (ntrees 10 / tuneLength 10)
 
 ##### V. Error analysis #### 
-########### FLOOR ####
-confusionMatrix(data=svmLinear_floor_TC_prediction, valid_TC$FLOOR) # 1
-confusionMatrix(data=svmLinear_floor_TI_prediction, valid_TI$FLOOR) # 1
-confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR) # 1
+########### LONGTITUDE ####
+########### TC ####
+postResample(rf_longitude_TC_prediction,valid_TC$LONGITUDE)
+# RMSE   Rsquared        MAE 
+# 10.5724280  0.8896429  6.9497967 
+MRE_rf_longitude_TC_prediction = mean(abs((rf_longitude_TC_prediction-valid_TC$LONGITUDE)/valid_TC$LONGITUDE))
+MRE_rf_longitude_TC_prediction # 0.0009445827
+
+valid_TC_e_LONG <- valid_TC
+valid_TC_e_LONG$LONG_pred <- rf_longitude_TC_prediction
+valid_TC_e_LONG$LONG_AE <- valid_TC_e_LONG$LONG_pred-valid_TC_e$LONGITUDE
+valid_TC_e_LONG$LONG_ME <- valid_TC_e_LONG$LONG_AE/valid_TC_e$LONGITUDE
+
+hchart(valid_TC_e_LONG$LONG_AE)
+hchart(valid_TC_e_LONG$LONG_ME)
+
+# ggplot(valid_TC_e_LONG, aes(x=LONGITUDE, y=LATITUDE))+
+  # geom_point(aes(color=ifelse(LONG_AE > 15, ">15",
+    #                          ifelse(LONG_AE < -15, "<-15",
+     #                         "regular")))) +
+  # scale_color_manual(values = c(">15"= "red",
+    #                            "<-15" = "orange",
+     #                           "regular" = "black"),
+      #               name="Absolute error")+facet_wrap(valid_TC_e_LONG$FLOOR)
+
+### ERROR
+# ggplot(valid_TC_e_LONG, aes(x=LONGITUDE, y=LATITUDE))+
+#  geom_point(aes(color=ifelse(LONG_ME >= 0.004, ">0.004",
+#                              ifelse(LONG_AE <= -0.005, "<-0.005",
+ #                                    "regular")))) +
+  # scale_color_manual(values = c(">0.004"= "red",
+    #                            "<-0.005" = "orange",
+     #                           "regular" = "black"),
+      #               name="Relative error")+facet_wrap(valid_TC_e_LONG$FLOOR)
+
+ggplot(valid_TC, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(valid_TC$FLOOR)
+
+########### TI ####
+########### TD ####
