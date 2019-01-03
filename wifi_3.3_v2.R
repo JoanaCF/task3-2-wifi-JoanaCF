@@ -1833,3 +1833,30 @@ hchart(valid_TD_e_LAT$LAT_RE)
     #                            "<-15" = "orange",
      #                           "regular" = "black"),
       #               name="Absolute error")+facet_wrap(valid_TD_e_LAT$FLOOR)
+
+###### W. Google maps - PROBLEMS ####
+install.packages("ggmap")
+library(ggmap) 
+qmap("Liverpool") 
+
+
+###### X. PLOTY ####
+library(plotly)
+plotly
+# https://plotly-book.cpsievert.me/scatter-traces.html#scatterplots
+
+### TEST with LATITUDE - TI #### 
+plot_ly(valid_TI, x = ~LONGITUDE, y = ~LATITUDE, name = "default")
+plot_ly(valid_TI_e_LONG, x = ~LONGITUDE, y = ~LATITUDE, name = "default")
+
+# merge predictions
+colnames(valid_TI_e_LONG)
+valid_final_LONG_LAT<-valid_TI_e_LONG
+colnames(valid_final_LONG_LAT)
+valid_final_LONG_LAT$LAT_pred <- rf_latitude_TI_prediction
+
+subplot(
+  plot_ly(valid_TI_e_LONG, x = ~LONG_pred, y = ~LAT_pred, z =valid_TI_e_LONG$FLOOR, name = "Predicted location"),
+  plot_ly(valid_TI_e_LONG, x = ~LONGITUDE, y = ~LATITUDE, z=valid_TI_e_LONG$FLOOR, name = "Actual location"))
+  
+### Q:Do I need to create a dataset with real floor and not predicted one? 
