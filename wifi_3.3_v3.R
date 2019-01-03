@@ -700,7 +700,7 @@ accuracy(svmLinear_floor_TI_vf_prediction, valid_TI_vf$FLOOR) ### accuracy 0.949
 confusionMatrix(data=svmLinear_floor_TI_vf_prediction, valid_TI_vf$FLOOR)
 
 
-######## !!!!! Include FLOOR predictions in respective datasets (clash with wifi_3.3_v2) ####
+######## Include FLOOR predictions in respective datasets (clash with wifi_3.3_v2) ####
  valid_TC_vf$FLOOR <- svmLinear_floor_TC_vf_prediction
  valid_TD_vf$FLOOR <- svmLinear_floor_TD_vf_prediction
  valid_TI_vf$FLOOR <- svmLinear_floor_TI_vf_prediction

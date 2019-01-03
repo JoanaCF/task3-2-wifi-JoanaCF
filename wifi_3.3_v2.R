@@ -1436,12 +1436,12 @@ postResample(rf_latitude_TI_prediction,valid_TI$LATITUDE)
 
 # rf_latitude_TD 
 # save(rf_latitude_TD, file="rf_latitude_TD.Rdata")
-load("rf_latitude_TI.Rdata")
+load("rf_latitude_TD.Rdata")
 rf_latitude_TD_prediction <- predict(rf_latitude_TD,valid_TD)
 rf_latitude_TD_prediction
 postResample(rf_latitude_TD_prediction,valid_TD$LATITUDE)
 #       RMSE   Rsquared        MAE 
-# 10.6867520  0.9091881  7.4728915  (100 trees and tune length 20)
+# 10.7226913  0.9085499  7.4745193  (100 trees and tune length 20)
 
 ## COMMON DATASET:
 # RMSE   Rsquared        MAE 
@@ -1724,3 +1724,112 @@ hchart(valid_TD_e_LONG$LONG_ME)
 
 
 
+
+########### LATITUDE ####
+########### TC ####
+postResample(rf_latitude_TC_prediction,valid_TC$LATITUDE)
+#       RMSE   Rsquared        MAE 
+#    9.0957511 0.9019608 6.3635272 (100 trees and tune length 20)
+
+MRE_rf_latitude_TC_prediction = mean(abs((rf_latitude_TC_prediction-valid_TC$LATITUDE)/valid_TC$LATITUDE))
+MRE_rf_latitude_TC_prediction # 1.308076e-06
+
+valid_TC_e_LAT <- valid_TC
+valid_TC_e_LAT$LAT_pred <- rf_latitude_TC_prediction
+valid_TC_e_LAT$LAT_AE <- valid_TC_e_LAT$LAT_pred-valid_TC_e_LAT$LATITUDE
+valid_TC_e_LAT$LAT_RE <- valid_TC_e_LAT$LAT_AE /valid_TC_e_LAT$LATITUDE
+
+hchart(valid_TC_e_LAT$LAT_AE)
+hchart(valid_TC_e_LAT$LAT_RE)
+
+# ggplot(valid_TC_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+ # geom_point(aes(color=ifelse(LAT_RE >= 0.000005, ">0.000005",
+   #                           ifelse(LAT_RE <= -0.000004, "<-0.000004",
+    #                                "regular")))) +
+ # scale_color_manual(values = c(">0.000005"= "red",
+   #                         "<-0.000004" = "orange",
+      #                     "regular" = "black"),
+       #       name="Relative error")+facet_wrap(valid_TC_e_LAT$FLOOR)
+
+# ggplot(valid_TC_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+  # geom_point(aes(color=ifelse(LAT_AE >= 20, ">20",
+    #                          ifelse(LAT_AE <= -20, "<-20",
+     #                                "regular")))) +
+  # scale_color_manual(values = c(">20"= "red",
+    #                            "<-20" = "orange",
+     #                           "regular" = "black"),
+      #               name="Absolute error")+facet_wrap(valid_TC_e_LAT$FLOOR)
+
+# ggplot(valid_TC, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(valid_TC$FLOOR)
+
+########### TI ####
+postResample(rf_latitude_TI_prediction,valid_TI$LATITUDE)
+#       RMSE  Rsquared       MAE 
+# 5.4395317 0.9716765 3.8059218  (100 trees and tune length 20)
+
+MRE_rf_latitude_TI_prediction = mean(abs((rf_latitude_TI_prediction-valid_TI$LATITUDE)/valid_TI$LATITUDE))
+MRE_rf_latitude_TI_prediction # 7.823131e-07
+
+valid_TI_e_LAT <- valid_TI
+valid_TI_e_LAT$LAT_pred <- rf_latitude_TI_prediction
+valid_TI_e_LAT$LAT_AE <- valid_TI_e_LAT$LAT_pred-valid_TI_e_LAT$LATITUDE
+valid_TI_e_LAT$LAT_RE <- valid_TI_e_LAT$LAT_AE /valid_TI_e_LAT$LATITUDE
+
+hchart(valid_TI_e_LAT$LAT_AE)
+hchart(valid_TI_e_LAT$LAT_RE)
+
+# ggplot(valid_TI_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+    # geom_point(aes(color=ifelse(LAT_RE >= 0.000003, ">0.000003",
+    #                       ifelse(LAT_RE <= -0.000003, "<-0.000003",
+   #                             "regular")))) +
+ # scale_color_manual(values = c(">0.000003"= "red",
+    #                     "<-0.000003" = "orange",
+   #                  "regular" = "black"),
+  #     name="Relative error")+facet_wrap(valid_TI_e_LAT$FLOOR)
+
+# ggplot(valid_TI_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+# geom_point(aes(color=ifelse(LAT_AE >= 15, ">15",
+    #                      ifelse(LAT_AE <= -15, "<-15",
+   #                             "regular")))) +
+ # scale_color_manual(values = c(">15"= "red",
+   #                         "<-15" = "orange",
+  #                         "regular" = "black"),
+ #              name="Absolute error")+facet_wrap(valid_TI_e_LAT$FLOOR)
+
+# ggplot(train_TI, aes(x=LONGITUDE, y=LATITUDE))+geom_point()+facet_wrap(train_TI$FLOOR)
+
+########### TD ####
+postResample(rf_latitude_TD_prediction,valid_TD$LATITUDE)
+#       RMSE   Rsquared        MAE 
+# 10.7226913  0.9085499  7.4745193  (100 trees and tune length 20)
+
+MRE_rf_latitude_TD_prediction = mean(abs((rf_latitude_TD_prediction-valid_TD$LATITUDE)/valid_TD$LATITUDE))
+MRE_rf_latitude_TD_prediction # 1.536425e-06
+
+valid_TD_e_LAT <- valid_TD
+valid_TD_e_LAT$LAT_pred <- rf_latitude_TD_prediction
+valid_TD_e_LAT$LAT_AE <- valid_TD_e_LAT$LAT_pred-valid_TD_e_LAT$LATITUDE
+valid_TD_e_LAT$LAT_RE <- valid_TD_e_LAT$LAT_AE /valid_TD_e_LAT$LATITUDE
+
+hchart(valid_TD_e_LAT$LAT_AE)
+hchart(valid_TD_e_LAT$LAT_RE)
+
+# ggplot(data=train_TD, aes(x=LONGITUDE, y=LATITUDE)) +geom_point()+facet_wrap(train_TD$FLOOR)
+
+# ggplot(valid_TD_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+ # geom_point(aes(color=ifelse(LAT_RE >= 0.000005, ">0.000005",
+   #                    ifelse(LAT_RE <= -0.000005, "<-0.000005",
+    #                         "regular")))) +
+ # scale_color_manual(values = c(">0.000005"= "red",
+   #                  "<-0.000005" = "orange",
+    #              "regular" = "black"),
+     # name="Relative error")+facet_wrap(valid_TD_e_LAT$FLOOR)
+
+# ggplot(valid_TD_e_LAT, aes(x=LONGITUDE, y=LATITUDE))+
+  # geom_point(aes(color=ifelse(LAT_AE >= 15, ">15",
+    #                          ifelse(LAT_AE <= -15, "<-15",
+     #                                "regular")))) +
+  # scale_color_manual(values = c(">15"= "red",
+    #                            "<-15" = "orange",
+     #                           "regular" = "black"),
+      #               name="Absolute error")+facet_wrap(valid_TD_e_LAT$FLOOR)
