@@ -821,3 +821,4 @@ postResample(rf_latitude_TD_vf_prediction,valid_TD_vf$LATITUDE)
 #       RMSE   Rsquared        MAE 
 # 10.6867520  0.9091881  7.4728915  (100 trees and tune length 20) - with user6 
 # 13.356380  0.864081  8.014365     (100 trees and tune length 20) - without user6
+

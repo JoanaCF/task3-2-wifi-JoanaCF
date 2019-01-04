@@ -620,7 +620,8 @@ Cross_validation <- trainControl(
 ######## $ Svm Linear 3 ####
 # with duplicates: best model: svm linear / accuracy 1 
 # set.seed (123)
-# svm_building_nodupli <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR - BuildingID_Pred, 
+colnames(training_c7_part_buildingID)
+# svm_building_nodupli <- train(BUILDINGID ~ . - LATITUDE - LONGITUDE - FLOOR, 
   # data = training_c7_part_buildingID, 
    #              method = "svmLinear3", 
     #         trControl = Cross_validation)
@@ -648,6 +649,7 @@ validation_v8$FLOORINDEX <- as.factor(validation_v8$FLOORINDEX)
 
 colnames(training_clean_v8)
 colnames(validation_v8)
+summary(training_clean_v8.1$FLOORINDEX)
 
 ######## Q.2 Creating training dataset for floorindex ####
 dim(training_clean_v8)
@@ -669,21 +671,22 @@ colnames(training_c8_part_floorindex) ## 312 waps + long + lat + floor + buildin
 ######## Q.3 Model // building + waps ####
 ######## $ Svm Linear ####
 # set.seed(123)
-# svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
-# data = training_c8_part_floorindex, 
-# method = "svmLinear", 
-# trControl = Cross_validation, 
-# preProcess= c("center","scale"))
+svmLinear_floorindex_waps_build_nodupli <- train(FLOORINDEX ~. - LATITUDE - LONGITUDE - FLOOR, 
+ data = training_c8_part_floorindex, 
+ method = "svmLinear", 
+ trControl = Cross_validation, 
+ preProcess= c("center","scale"))
 
-# svmLinear_floorindex_waps_build_nodupli
+ svmLinear_floorindex_waps_build_nodupli
 ### acc= 0.9763515  kappa = 0.9741264
 
-# save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
+ save(svmLinear_floorindex_waps_build_nodupli ,file = "svmLinear_floorindex_waps_build_nodupli .Rdata")
 load("svmLinear_floorindex_waps_build_nodupli .Rdata")
-svmLinear_floorindex_waps_build_nodupli_prediction <- predict(svmLinear_floorindex_waps_build_nodupli,validation_v8) 
+svmLinear_floorindex_waps_build_nodupli_prediction <- predict(svmLinear_floorindex_waps_build_nodupli,validation_v7) 
 
 ## Accuracy 
-accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.8749     
+
+accuracy(svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX) ### 0.9208     
 confusionMatrix(data=svmLinear_floorindex_waps_build_nodupli_prediction, validation_v8$FLOORINDEX)
 ### C: SVM linear 3 (accuracy of 84%)
 
@@ -1052,10 +1055,10 @@ postResample(rf_latitude_nodupli_nobuild_prediction,validation_v9$LATITUDE)
 ######## $ KNN #### 
 # set.seed(123)
 # knn_latitude_nodupli_build_floor<- train(LATITUDE ~ . - FLOOR - LONGITUDE,
-      # data = training_c9_part_latitude,
-      # method = "knn", 
-      # preProcess=c("center", "scale"),  
-      # trControl = Cross_validation )
+  #     data = training_c9_part_latitude,
+   #    method = "knn", 
+    #   preProcess=c("center", "scale"),  
+     #  trControl = Cross_validation )
 
 # knn_latitude_nodupli_build_floor
 
@@ -1109,6 +1112,10 @@ train_TC<-training_clean_v8 %>% filter(BUILDINGID=="TC")
 train_TI<-training_clean_v8 %>% filter(BUILDINGID=="TI")
 train_TD<-training_clean_v8 %>% filter(BUILDINGID=="TD")
 ### C: TD building - 4848  317  (0.26) / TI building - 5241  317 (0.28) / TC building - 8598  317 (0.46)
+
+dim(train_TC)
+dim(train_TD)
+dim(train_TI)
 
 train_TC$BuildingID_Pred <- NULL
 train_TI$BuildingID_Pred <- NULL
@@ -1259,23 +1266,6 @@ svmLinear_floor_TD_prediction <- predict(svmLinear_floor_TD,valid_TD)
 ## Accuracy 
 accuracy(svmLinear_floor_TD_prediction, valid_TD$FLOOR) ### 0.7915309       
 confusionMatrix(data=svmLinear_floor_TD_prediction, valid_TD$FLOOR)
-
-######## $ KNN 
-# knn_floor_TD <- train(FLOOR ~. - LATITUDE - LONGITUDE - BUILDINGID - FLOORINDEX, 
-#                        data = train_TD, 
-#                      method = "knn", 
-#                    trControl = Cross_validation)
-
-# knn_floor_TD
-### acc= 0.9947745  kappa = 0.9929764
-
-save(knn_floor_TD,file = "knn_floor_TD.Rdata")
-load("knn_floor_TD.Rdata")
-knn_floor_TD_prediction <- predict(knn_floor_TD,valid_TD) 
-
-## Accuracy 
-accuracy(knn_floor_TD_prediction, valid_TD$FLOOR) ### 0.7752         
-confusionMatrix(data=knn_floor_TD_prediction, valid_TD$FLOOR)
 
 ########### $ error analysis ####
 # create the error variable
@@ -1578,7 +1568,7 @@ rf_longitude_best_wap_prediction
 postResample(rf_longitude_best_wap_prediction,validation_v8.1.2$LONGITUDE)
 #       RMSE   Rsquared        MAE 
 #    26.72027   0.95114     12.38980 (ntrees 10 / tuneLength 10)
-#    26.1781929  0.9530235 12.2461255 (ntrees 50 / tuneLength 10)
+#    25.5669873  0.9554489 12.0566234  (ntrees 50 / tuneLength 10)
 
 ########### U.4 Model LATITUDE ####
 ########### U.4.1 Create Data sample ####
@@ -1607,8 +1597,7 @@ rf_latit_best_wap_prediction <- predict(rf_latit_best_wap,validation_v8.1.2)
 rf_latit_best_wap_prediction
 postResample(rf_latit_best_wap_prediction,validation_v8.1.2$LATITUDE)
 #       RMSE      Rsquared        MAE 
-#    18.8833196  0.9299748 10.2736053  (ntrees 10 / tuneLength 10)
-#    18.9522936  0.9291487 10.1900355  (ntrees 10 / tuneLength 10)
+#    20.9628063  0.9134026 10.8387797  (ntrees 50 / tuneLength 10) - has changed
 
 ##### V. Error analysis #### 
 ########### LONGTITUDE ####
@@ -1627,14 +1616,18 @@ valid_TC_e_LONG$LONG_ME <- valid_TC_e_LONG$LONG_AE/valid_TC_e$LONGITUDE
 hchart(valid_TC_e_LONG$LONG_AE)
 hchart(valid_TC_e_LONG$LONG_ME)
 
-# ggplot(valid_TC_e_LONG, aes(x=LONGITUDE, y=LATITUDE))+
-  # geom_point(aes(color=ifelse(LONG_AE > 15, ">15",
-    #                          ifelse(LONG_AE < -15, "<-15",
-     #                         "regular")))) +
-  # scale_color_manual(values = c(">15"= "red",
-    #                            "<-15" = "orange",
-     #                           "regular" = "black"),
-      #               name="Absolute error")+facet_wrap(valid_TC_e_LONG$FLOOR)
+validTC_OUT_38<-valid_TC_e_LONG %>% filter(LONG_AE > 38) # 2 
+## floor 0  LONG -7397 LAT 4864815
+## floor 1  LONG -7393 LAT 4864837
+
+ggplot(valid_TC_e_LONG, aes(x=LONGITUDE, y=LATITUDE))+
+  geom_point(aes(color=ifelse(LONG_AE > 15, ">15",
+                              ifelse(LONG_AE < -15, "<-15",
+                              "regular")))) +
+   scale_color_manual(values = c(">15"= "red",
+                                "<-15" = "orange",
+                                "regular" = "black"),
+                     name="Absolute error")+facet_wrap(valid_TC_e_LONG$FLOOR)
 
 ### ERROR
 # ggplot(valid_TC_e_LONG, aes(x=LONGITUDE, y=LATITUDE))+
@@ -1859,4 +1852,104 @@ subplot(
   plot_ly(valid_TI_e_LONG, x = ~LONG_pred, y = ~LAT_pred, z =valid_TI_e_LONG$FLOOR, name = "Predicted location"),
   plot_ly(valid_TI_e_LONG, x = ~LONGITUDE, y = ~LATITUDE, z=valid_TI_e_LONG$FLOOR, name = "Actual location"))
   
-### Q:Do I need to create a dataset with real floor and not predicted one? 
+### COMBINED DATASET - TI ####
+valid_final_LONG_LAT$LAT_pred <- rf_latitude_TI_prediction
+colnames(valid_final_LONG_LAT)## LONG, LAT, FLOOR, BUILD, FLOORINDEX, LONG_pred, LONG_AE, LONG_ME, LAT_pred
+Valid_final_TI_pred <- valid_final_LONG_LAT
+Valid_final_TI_pred$LONG_AE <- NULL
+Valid_final_TI_pred$LONG_ME <- NULL
+Valid_final_TI_pred$FLOORINDEX <- NULL
+colnames(Valid_final_TI_pred)
+Valid_final_TI_pred$LATITUDE <- Valid_final_TI_pred$LAT_pred
+Valid_final_TI_pred$LONGITUDE <- Valid_final_TI_pred$LONG_pred
+Valid_final_TI_pred$LONG_pred <- NULL
+Valid_final_TI_pred$LAT_pred <- NULL
+colnames(Valid_final_TI_pred)
+colnames(valid_TI_final)
+valid_TI_final <- valid_TI
+valid_TI_final$FLOORINDEX <- NULL
+
+### combined dataset TI ### 
+valid_TI_final
+Valid_final_TI_pred
+
+valid_TI_final$code <- "original_position"
+Valid_final_TI_pred$code <- "predicted_position"
+
+head(Valid_final_TI_pred$code)
+
+dim(valid_TI_final)
+dim(Valid_final_TI_pred)
+
+TI_combined <- rbind(valid_TI_final,Valid_final_TI_pred)
+dim(TI_combined)
+
+### COMBINED DATASET - TC ####
+valid_TC_final <- valid_TC_e_LAT
+colnames(valid_TC_final)
+valid_TC_final$LAT_AE <- NULL
+valid_TC_final$LAT_RE <- NULL
+valid_TC_final$FLOORINDEX <- NULL
+
+valid_TC_final$LATITUDE <- valid_TC_final$LAT_pred
+valid_TC_final$LAT_pred <- NULL
+valid_TC_final$LONGITUDE <- rf_longitude_TC_prediction
+
+colnames(valid_TC_final)
+
+valid_TC_final_pred<- valid_TC_final
+colnames(valid_TC_final_pred)
+
+### combined dataset TC ### 
+valid_TC_final_pred
+colnames(valid_TC)
+valid_TC_fin <- valid_TC
+valid_TC_fin$FLOORINDEX <- NULL
+colnames(valid_TC_fin)
+
+dim(valid_TC_fin)
+dim(valid_TC_final_pred)
+
+valid_TC_fin$code <- "original_position"
+valid_TC_final_pred$code <- "predicted_position" 
+
+TC_combined <- rbind(valid_TC_fin,valid_TC_final_pred)
+dim(TC_combined)
+
+### COMBINED DATASET - TD ####
+
+valid_TD_final <- valid_TD_e_LAT
+colnames(valid_TD_final)
+valid_TD_final$LAT_AE <- NULL
+valid_TD_final$LAT_RE <- NULL
+valid_TD_final$FLOORINDEX <- NULL
+
+valid_TD_final$LATITUDE <- valid_TD_final$LAT_pred
+valid_TD_final$LAT_pred <- NULL
+valid_TD_final$LONGITUDE <- rf_longitude_TD_prediction
+
+valid_TD_final_pred<- valid_TD_final
+colnames(valid_TD_final_pred)
+
+### combined dataset TD ### 
+valid_TD_fin <- valid_TD
+valid_TD_fin$FLOORINDEX <- NULL
+colnames(valid_TD_fin)
+
+dim(valid_TD_fin)
+dim(valid_TD_final_pred)
+
+valid_TD_fin$code <- "original_position"
+valid_TD_final_pred$code <- "predicted_position"
+
+TD_combined <- rbind(valid_TD_fin,valid_TD_final_pred)
+dim(TD_combined)
+
+### COMBINED TRIAL - PLOTLY ####
+### $ TI ####
+head(TI_combined$code)
+TI_plotly<-  plot_ly(TI_combined, x = ~LONGITUDE, y = ~LATITUDE, z = ~FLOOR, color = ~code) 
+
+TD_plotly<-  plot_ly(TD_combined, x = ~LONGITUDE, y = ~LATITUDE, z =~FLOOR, color = ~code)
+
+TC_plotly<-  plot_ly(TC_combined, x = ~LONGITUDE, y = ~LATITUDE, z =~FLOOR, color = ~code)
